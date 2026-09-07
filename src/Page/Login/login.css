@@ -1,0 +1,64 @@
+.title {
+    color: #04aa6d;
+    text-align: center;
+    margin: revert;
+}
+
+.form {
+    width: 500px;
+    margin: 0 auto;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* TextField label */
+.form label {
+    color: #000000 !important;
+    font-weight: 600;
+}
+
+/* Input */
+.form input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0 16px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    border-radius: 4px;
+    color: #000000;
+    background-color: #ffffff;
+}
+
+/* Placeholder */
+.form input::placeholder {
+    color: #555555;
+}
+
+/* Login button */
+.form button {
+    background-color: #04aa6d;
+    color: #ffffff;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 4px;
+}
+
+.form button:hover {
+    opacity: 0.9;
+}
+
+/* Signup text */
+.form p {
+    color: #000000 !important;
+    text-align: center;
+}
+
+.form p a {
+    color: #8b5cf6;
+}
