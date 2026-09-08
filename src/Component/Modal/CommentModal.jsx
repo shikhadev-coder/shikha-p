@@ -1,4 +1,4 @@
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import './modal.css';
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -20,12 +20,15 @@ const depthColors = {
 };
 
 const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts ,setOpenReportModal , setSelectedComment}) => {
-    
-    const visibleComments = comments?.replies?.filter((comment) => {
-        const isReportedByMe = comment?.isReported?.some((report) => report?.whoReported === loginUserInfo?.id);
-        return !isReportedByMe;
-    });
-    
+
+    const visibleComments = useMemo(() => {
+        return (
+            comments?.replies?.filter((comment) => {
+                const isReportedByMe = comment?.isReported?.some((report) => report?.whoReported === loginUserInfo?.id);
+                return !isReportedByMe;
+            })
+        )
+    },[comments , loginUserInfo?.id])
 
     return (
         <>
@@ -183,10 +186,16 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
     const { commentList} = useSelector(state => state.comment);
 
     const filterComment = Array.isArray(commentList) ? commentList.filter((comment) => comment?.candidate_id === candidate?.id) : [];
-    const visibleComments = filterComment.filter((comment) => {
-        const isReportedByMe = comment?.isReported?.some((report) => report?.whoReported === loginUserInfo?.id);
-        return !isReportedByMe;
-    });
+
+    const visibleComments = useMemo(() => {
+        return filterComment.filter(comment => {
+            const isReportedByMe = comment?.isReported?.some(
+                report => report?.whoReported === loginUserInfo?.id
+            );
+
+            return !isReportedByMe;
+        });
+    }, [commentList, candidate?.id, loginUserInfo?.id]);
 
     const like = filterComment?.flatMap((comment) => comment?.likeId)?.map((commentArray) => commentArray?.commentId || 0);
 

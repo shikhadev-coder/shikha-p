@@ -39,7 +39,7 @@ export default function Page() {
 
     const [candidates, setCandidates] = useState(InitialData);
     const [undecidedVote, setUndecidedVote] = useState(InitialUndicidedVote);
-    const [ votedCandidateId, setVotedCandidateId] = useState(InitialUserVotes);
+    const [votedCandidateId, setVotedCandidateId] = useState(InitialUserVotes);
     const [likeId, setLikeId] = useState(InitialLike);
     const [disLikeId, setDislikeId] = useState(InitialDisLike);
 
@@ -458,9 +458,7 @@ export default function Page() {
                     upsertUserIntoStorage({
                         ...userInfo,
                         undecidedVotesDistributed: false,
-                        votedCandidateId: shouldBeUndecided
-                            ? 'undecided'
-                            : userInfo?.votedCandidateId,
+                        votedCandidateId: shouldBeUndecided ? 'undecided' : userInfo?.votedCandidateId,
                     });
                 }
             });

@@ -11,8 +11,8 @@ const ReportModal = ({ onClose, Comment }) => {
     useEffect(() => {
         if (!submit) return;
 
-        dispatch(reqToReportComment({ reportedCommentId: Comment?.id, whoReported: loginUserInfo?.id }))
-
+        dispatch(reqToReportComment({ reportedCommentId: Comment?.id, whoReported: loginUserInfo?.id }));
+        setSumbit(false);
         onClose();
     }, [submit])
 
