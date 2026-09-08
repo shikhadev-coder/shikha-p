@@ -181,11 +181,7 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
 
     const filterReportedComments = (comments) => {
         return comments.filter(comment => {
-            return !comment?.isReported?.some(report => report?.whoReported === loginUserInfo?.id)
-        }).map(comment => ({
-            ...comment,
-            replies: filterReportedComments(comment?.replies || [])
-        }));
+            return !comment?.isReported?.some(report => report?.whoReported === loginUserInfo?.id)}).map(comment => ({ ...comment, replies: filterReportedComments(comment?.replies || [])}));
     };
 
     const visibleComments = useMemo(() => {
