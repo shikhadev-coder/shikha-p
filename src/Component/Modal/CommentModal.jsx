@@ -14,9 +14,10 @@ import ReportModal from "./ReportModal";
 
 const MAX_DEPTH = 3;
 const depthColors = {
-    1: '#3b82f6',
-    2: '#10b981',
-    3: '#f59e0b'
+    0: '#3b82f6',
+    1: '#10b981',
+    2: '#f59e0b',
+    3: '#d37c76ff',
 };
 
 const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts ,setOpenReportModal , setSelectedComment}) => {
@@ -34,7 +35,7 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
                             className="replies"
                             style={{
                                 marginLeft: `calc(50px + (${Math.min(depth, MAX_DEPTH)} * 50px))`,
-                                borderLeft: depth > 0 ? `2px solid ${depthColors[Math.min(depth, MAX_DEPTH)]}` : `2px solid ${depthColors[1]}`
+                                borderLeft: depth > 0 ? `2px solid ${depthColors[Math.min(depth, MAX_DEPTH)]}` : `2px solid ${depthColors[0]}`
                             }}
                         >
                             <div className="reply-item">
