@@ -297,6 +297,7 @@ const ReportComment = ({ comments, commentId, whoReported }) => {
 
     while (queue.length > 0) {
         const currentComment = queue.shift();
+        console.log(JSON.parse(JSON.stringify(currentComment)) , 'currentComment')
 
         if (currentComment.id === commentId) {
             const data = {whoReported: whoReported}
