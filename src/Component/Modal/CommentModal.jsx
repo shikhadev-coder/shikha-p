@@ -180,27 +180,18 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
     const filterComment = Array.isArray(commentList) ? commentList.filter((comment) => comment?.candidate_id === candidate?.id) : [];
 
     const filterReportedComments = (comments) => {
-        return comments.flatMap(comment => {
-            const isReportedByMe = comment?.isReported?.some(report => report?.whoReported === loginUserInfo?.id);
-
-            const filteredReplies = filterReportedComments(comment?.replies || []);
-
-            if (isReportedByMe) {
-                return filteredReplies;
-            }
-
-            return [
-                {
-                    ...comment,
-                    replies: filteredReplies,
-                }
-            ];
-        });
+        return comments.filter(comment => {
+            return !comment?.isReported?.some(report => report?.whoReported === loginUserInfo?.id)
+        }).map(comment => ({
+            ...comment,
+            replies: filterReportedComments(comment?.replies || [])
+        }));
     };
 
     const visibleComments = useMemo(() => {
         return filterReportedComments(filterComment);
     }, [filterComment, loginUserInfo?.id]);
+
 
     // const visibleComments = useMemo(() => {
     //     return filterComment.filter(comment => {
