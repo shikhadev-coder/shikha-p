@@ -378,7 +378,7 @@ export default function Page() {
         const hasDistributedVotes = localStorage.getItem('BeforeDistributedVotes');
         const voteId = candidateId;
 
-        if (hasDistributedVotes && loginUserData?.votedCandidateId === null || loginUserData?.undecidedVotesDistributed === true && loginUserData?.votedCandidateId === 'undecided' || hasDistributedVotes && loginUserData?.votedCandidateId !== 'undecided' ) {
+        if (hasDistributedVotes && loginUserData?.votedCandidateId === null || hasDistributedVotes && loginUserData?.undecidedVotesDistributed === true && loginUserData?.votedCandidateId === 'undecided' || hasDistributedVotes && loginUserData?.votedCandidateId !== 'undecided' ) {
 
             const parsedData = JSON.parse(hasDistributedVotes);
             const restoredCandidates = parsedData.candidates;
