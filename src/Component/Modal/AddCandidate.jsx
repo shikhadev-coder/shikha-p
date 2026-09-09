@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 import './modal.css';
-import { Field, Formik,Form } from "formik";
+import { Formik,Form } from "formik";
 import TextField from "../TextField";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,44 +39,60 @@ const AddCandidateModal = ({ onClose , candidate }) => {
 
     return (
 
-        <div className="Modal">
-            <Formik
-                initialValues={{
-                    candidateName: candidate?.candidates,
-                    partyName: candidate?.party,
-                }}
-                validationSchema={validate}
+<div className="Modal">
+    <Formik
+        initialValues={{
+            candidateName: candidate?.candidates || "",
+            partyName: candidate?.party || "",
+        }}
+        validationSchema={validate}
+        onSubmit={(values, { resetForm }) => {
+            handleSubmit(values, resetForm);
+        }}
+    >
+        {() => (
+            <div className="candidate-modal">
+                <Form className="candidate-form">
 
-                onSubmit={(values, { resetForm }) => {
-                    handleSubmit(values , resetForm);
-                }}
-            >
-                {() => (
-                    <div >
-                        <Form className="form">
-                            <TextField
+                    <h3>
+                        {candidate ? "Update Candidate" : "Add Candidate"}
+                    </h3>
+
+                    <div className="form-group">
+                        <TextField
                             className="form-control"
                             type="text"
                             name="candidateName"
                             label="Candidate Name"
-                            placeholder="Enter you candidate name"
-                            />
-                            <TextField
-                                className="form-control"
-                                type="text"
-                                name="partyName"
-                                label="Party Name"
-                                placeholder="Enter you party name"
-                            />
-                            <button className="btn btn-dark m-3" type="submit">
-                                {candidate ? "Update" : "Add"}
-                            </button>
-                            <button className="btn btn-danger" onClick={onClose}>Cancel</button>
-                        </Form>
+                            placeholder="Enter candidate name"
+                        />
                     </div>
-                )}
-            </Formik>
-        </div>
+
+                    <div className="form-group">
+                        <TextField
+                            className="form-control"
+                            type="text"
+                            name="partyName"
+                            label="Party Name"
+                            placeholder="Enter party name"
+                        />
+                    </div>
+
+                    <div className="candidates-actions">
+                        <button className="candidate-btn submit-btn" type="submit">
+                            {candidate ? "Update" : "Add"}
+                        </button>
+
+                        <button className="candidate-btn cancel-btn" type="button" onClick={onClose}>
+                            Cancel
+                        </button>
+                    </div>
+
+                </Form>
+            </div>
+        )}
+    </Formik>
+</div>
     );
 };
 

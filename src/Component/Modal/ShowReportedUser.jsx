@@ -2,7 +2,7 @@ import './modal.css';
 import { useEffect, useState } from "react";
 
 
-const ShowReportedUserModal = ({ onClose , reportedUser , onUnreport}) => {
+const ShowReportedUserModal = ({ onClose, reportedUser, onUnreport }) => {
 
     const [reportedUserList, setReportedUserList] = useState(reportedUser);
 
@@ -25,29 +25,47 @@ const ShowReportedUserModal = ({ onClose , reportedUser , onUnreport}) => {
     }, [reportedUserList, onClose]);
 
     return (
-
         <div className="Modal">
-            <div style={{backgroundColor:"#fff" , color:"#000" , padding:"20px" , borderRadius:"10px" , width:'55%' , justifySelf:'center'}}>
-                <h3 style={{textAlign:"center"}} >Reported User</h3>
-            <table className="table">
-                <tbody>
-                    <tr>
-                        <th>#</th>
-                        <th>User</th>
-                        <th>Action</th>
-                    </tr>
-                    {reportedUserList.length > 0 ? reportedUserList?.map((user, index) => (
-                        <tr key={index}>
-                            <th>{index + 1}</th>
-                            <th>{user.firstName + " " + user.lastName}</th>
-                            <th><button className="action-btn" onClick={() => handleUnReportedUser(user.id)}>Unreported</button></th>
+            <div className="reported-user-modal">
+                <h3>Reported User</h3>
+
+                <table className="reported-user-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Action</th>
                         </tr>
-                    )) : <tr><td colSpan='2'>No User</td></tr>}
-                </tbody>
-            </table>
-            <button className="action-btn cancel-btn" onClick={onClose} >
-                    Cancel
-            </button>
+                    </thead>
+
+                    <tbody>
+                        {reportedUserList.length > 0 ? (
+                            reportedUserList.map((user, index) => (
+                                <tr key={user.id || index}>
+                                    <td>{index + 1}</td>
+                                    <td>{user.firstName} {user.lastName}</td>
+                                    <td>
+                                        <button className="action-btn unreport-btn" onClick={() => handleUnReportedUser(user.id)}>
+                                            Unreport
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="3" className="no-user">
+                                    No reported users
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+
+                <div className="modal-footer">
+                    <button className="action-btn cancel-btn" onClick={onClose}>
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     );

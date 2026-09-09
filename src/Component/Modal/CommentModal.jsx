@@ -360,12 +360,9 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
     return (
         <div className="Modal">
             <div className="modal-overlay">
-                <div className="modal-content comment-modal">
+                <div className="comment-modal">
                     <div className="modal-header">
                         <h3> Comments
-                            {/* <span className="comment-count">
-                                {filterComment?.length || 0}
-                            </span> */}
                         </h3>
 
                         <button
@@ -447,10 +444,6 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                         </div>
                                     }
 
-                                    {/* {comments.replies[0]?.isReported?.every((comment) => comment?.whoReported !== loginUserInfo?.id) &&
-                                        <span>Some comments may be hidden</span>
-                                    } */}
-
                                     {expandReplies[comments?.id] && comments?.replies?.length > 0 && (
                                         <CommentItem
                                             comments={comments}
@@ -479,7 +472,6 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                             <div className="no-comment">
                                 <h4>No comments yet</h4>
                                 <p>Be the first one to comment on this candidate.</p>
-                                {/* <p>If a comment count is displayed, some comments may be hidden because they were reported or removed.</p> */}
                             </div>
                         )}
                     </div>

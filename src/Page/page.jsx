@@ -50,7 +50,7 @@ export default function Page() {
     });
 
     const [pinUser, setPinUser] = useState(() => {
-         const pinnedList = JSON.parse(localStorage.getItem('PinnedUser')) || [];
+        const pinnedList = JSON.parse(localStorage.getItem('PinnedUser')) || [];
 
         return pinnedList.filter(user => user?.whoPinned === loginUserInfo?.id).map(user => user.pinnedUserId);
     });
@@ -68,7 +68,7 @@ export default function Page() {
     const [selectCandidate, setSelectCandidate] = useState('');
     const [openReportedUserModal, setOpenReportedUserModal] = useState(false);
     const [openCommentModal, setOpenCommentModal] = useState(false);
-    
+
     const [reportedUserIds, setReportedUserIds] = useState(() => {
         const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
 
@@ -159,7 +159,7 @@ export default function Page() {
         if (showTopTwo) {
             // const med = totalCandidates / 2 ;
             // result = result.sort((a, b) => b.votes - a.votes).slice(Math.ceil(med - 1),  Math.floor(med + 1));
-            result = result.sort((a, b) => b.votes - a.votes).slice(0,2);
+            result = result.sort((a, b) => b.votes - a.votes).slice(0, 2);
             const hasTopTwo = result.some(topCand =>
                 filteredCandidates.some(filterCand => filterCand.id === topCand.id)
             );
@@ -201,7 +201,7 @@ export default function Page() {
 
         setFilteredCandidates(result);
 
-    }, [candidates, filter, search, sortBy, showTopTwo, reportedCandidateId  , pinCandidate]);
+    }, [candidates, filter, search, sortBy, showTopTwo, reportedCandidateId, pinCandidate]);
 
     const handleReport = (candidateId) => {
         setReportedCandidateId(candidateId);
@@ -378,7 +378,7 @@ export default function Page() {
         const hasDistributedVotes = localStorage.getItem('BeforeDistributedVotes');
         const voteId = candidateId;
 
-        if (hasDistributedVotes && (loginUserData?.undecidedVotesDistributed === true && loginUserData?.votedCandidateId === 'undecided' || loginUserData?.votedCandidateId !== 'undecided') ) {
+        if (hasDistributedVotes && (loginUserData?.undecidedVotesDistributed === true && loginUserData?.votedCandidateId === 'undecided' || loginUserData?.votedCandidateId !== 'undecided')) {
 
             const parsedData = JSON.parse(hasDistributedVotes);
             const restoredCandidates = parsedData.candidates;
@@ -403,7 +403,7 @@ export default function Page() {
             saveUserData(updateCandidates, undecidedVote, candidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, null, loginUserData?.undecidedVotesDistributed);
 
         }
-        
+
         const updateCandidates = candidates.map((candidate) => {
 
             if (candidate.id === previousVoteId) {
@@ -437,7 +437,7 @@ export default function Page() {
             const parsedData = JSON.parse(beforeDistributedVotes);
             const restoredCandidates = parsedData.candidates;
             const isCurrentUserDistributed = loginUserData?.undecidedVotesDistributed === true;
-            const undecidedVotes = Math.max(0, isCurrentUserDistributed  ? parsedData.undecidedVote : parsedData.undecidedVote + 1);
+            const undecidedVotes = Math.max(0, isCurrentUserDistributed ? parsedData.undecidedVote : parsedData.undecidedVote + 1);
             // console.log(loginUserData?.votedCandidateId , isCurrentUserDistributed)
             const updateCandidates = restoredCandidates.map((candidate) => {
                 if (!isCurrentUserDistributed && loginUserData?.votedCandidateId !== 'undecided' && candidate.id === loginUserData?.votedCandidateId) {
@@ -544,7 +544,7 @@ export default function Page() {
                 break;
         }
 
-         if (pinCandidate) {
+        if (pinCandidate) {
             activeCandidates.sort((a, b) => {
                 if (pinCandidate.includes(a.id)) return -1;
                 if (pinCandidate.includes(b.id)) return 1;
@@ -559,7 +559,7 @@ export default function Page() {
             return;
         }
 
-        loginUserData?.undecidedVotesDistributed !== true && localStorage.setItem('BeforeDistributedVotes', JSON.stringify({ candidates , undecidedVote, votedCandidateId, userId }));
+        loginUserData?.undecidedVotesDistributed !== true && localStorage.setItem('BeforeDistributedVotes', JSON.stringify({ candidates, undecidedVote, votedCandidateId, userId }));
 
         // const updatedAllUsers = [];
         // for (const user of allUsers) {
@@ -594,7 +594,7 @@ export default function Page() {
             return {
                 ...user,
                 undecidedVotesDistributed: true,
-                votedCandidateId: candidateId , 
+                votedCandidateId: candidateId,
             };
         });
 
@@ -649,7 +649,7 @@ export default function Page() {
     }
 
     const handleReportUser = (userId) => {
-        const ReportedUserDetail = { whoReported: loginUserInfo?.id, reportedUser: userId , previousLikeId: loginUserData?.likeId ?? null,  previousDislikeId: loginUserData?.dislikeId ?? null };
+        const ReportedUserDetail = { whoReported: loginUserInfo?.id, reportedUser: userId, previousLikeId: loginUserData?.likeId ?? null, previousDislikeId: loginUserData?.dislikeId ?? null };
 
         const canReportSelf = ReportedUserDetail.whoReported === ReportedUserDetail.reportedUser;
 
@@ -673,20 +673,20 @@ export default function Page() {
         const userCandidates = defaultData?.candidates?.filter((candidate) => Number(candidate?.whoAdded) === Number(userId));
 
         if (data?.whoAdded === userId || userCandidates?.length > 0) {
-            
+
             const hasLikedCandidate = userCandidates.some((candidate) => Number(candidate.id) === Number(loginUserData?.likeId));
             const hasDislikedCandidate = userCandidates.some((candidate) => Number(candidate.id) === Number(loginUserData?.dislikeId));
 
             const updatecandidate = defaultData?.candidates.map((candidate) => {
                 if (candidate.id === votedCandidateId || hasLikedCandidate || hasDislikedCandidate) {
-                     if (Number(candidate?.whoAdded) !== Number(userId)) {
+                    if (Number(candidate?.whoAdded) !== Number(userId)) {
                         return candidate;
                     }
                     return {
                         ...candidate,
-                        votes: candidate.id === votedCandidateId ? Math.max(0 , candidate.votes - 1) : candidate.votes,
+                        votes: candidate.id === votedCandidateId ? Math.max(0, candidate.votes - 1) : candidate.votes,
                         like: hasLikedCandidate && Number(candidate.id) === Number(loginUserData?.likeId) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
-                        dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1): Number(candidate.dislike || 0),
+                        dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1) : Number(candidate.dislike || 0),
 
                     };
                 }
@@ -711,7 +711,7 @@ export default function Page() {
                 });
             }
 
-            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, 'undecided', true , hasLikedCandidate ? null : loginUserData?.likeId, hasDislikedCandidate ? null : loginUserData?.dislikeId, null);
+            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, 'undecided', true, hasLikedCandidate ? null : loginUserData?.likeId, hasDislikedCandidate ? null : loginUserData?.dislikeId, null);
 
             if (beforeDistributedVotes) {
                 const updateBeforeDistributedVotes = beforeDistributedVotes?.candidates.map((candidate) => {
@@ -720,7 +720,7 @@ export default function Page() {
                             ...candidate,
                             votes: candidate.id === votedCandidateId ? Math.max(0, candidate.votes - 1) : candidate.votes,
                             like: hasLikedCandidate && Number(candidate.id) === Number(loginUserData?.likeId) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
-                            dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1): Number(candidate.dislike || 0),
+                            dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1) : Number(candidate.dislike || 0),
                         };
                     }
                     return candidate;
@@ -728,7 +728,7 @@ export default function Page() {
                 const updatedBeforeDistributedData = {
                     ...beforeDistributedVotes,
                     candidates: updateBeforeDistributedVotes,
-                    undecidedVote : loginUserData?.undecidedVotesDistributed !== true ? beforeDistributedVotes.undecidedVote + 1 : beforeDistributedVotes.undecidedVote
+                    undecidedVote: loginUserData?.undecidedVotesDistributed !== true ? beforeDistributedVotes.undecidedVote + 1 : beforeDistributedVotes.undecidedVote
                 }
                 localStorage.setItem('BeforeDistributedVotes', JSON.stringify(updatedBeforeDistributedData));
             }
@@ -792,15 +792,17 @@ export default function Page() {
         const currentUserId = loginUserInfo?.id;
         if (!currentUserId) return;
 
-        const config = { user: {
-            storageKey: "PinnedUser", 
-            idKey: "pinnedUserId", 
-            setPins: setPinUser, 
-        }, candidate: { 
-            storageKey: "PinnedCandidate", 
-            idKey: "pinnedCandidateId", 
-            setPins: setPinCandidate, 
-        }, };
+        const config = {
+            user: {
+                storageKey: "PinnedUser",
+                idKey: "pinnedUserId",
+                setPins: setPinUser,
+            }, candidate: {
+                storageKey: "PinnedCandidate",
+                idKey: "pinnedCandidateId",
+                setPins: setPinCandidate,
+            },
+        };
 
         const { storageKey, idKey, setPins } = config[type];
 
@@ -815,8 +817,8 @@ export default function Page() {
 
         if (isAlreadyPinned) {
             const updatedList = pinnedList.filter((pin) => !(pin[idKey] === newPin[idKey] && pin.whoPinned === newPin.whoPinned));
-            const update = updatedList.filter((pin) => pin.whoPinned === newPin.whoPinned).map((pin) => pin[idKey] )
-            setPins(update) ;
+            const update = updatedList.filter((pin) => pin.whoPinned === newPin.whoPinned).map((pin) => pin[idKey])
+            setPins(update);
 
             localStorage.setItem(storageKey, JSON.stringify(updatedList));
             return;
@@ -837,28 +839,28 @@ export default function Page() {
     return (
         <>
             <div className="voting-dashboard">
-                <div className="dashboard-header">
-                    <div className="top-details">
-                        <h3 className="tittle">Election / Poll Analyser</h3>
-                        <h4 className="description">
+                <div className="voting-header">
+                    <div className="poll-info">
+                        <h3 className="poll-title">Election / Poll Analyser</h3>
+                        <h4 className="poll-description">
                             Analyser Votes, filter, search, sort and distribute undecided votes.
                         </h4>
                     </div>
 
-                    <div className="user-details">
-                        <strong>
+                    <div className="user-info">
+                        <strong className="user-name">
                             {loginUserInfo?.firstName + " " + loginUserInfo?.lastName}
                         </strong>
 
-                        <button onClick={handleLogout}>Logout</button>
+                        <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </div>
 
-                <div className='user-table-details'>
-                    <div className='search'>
+                <div className='user-management'>
+                    <div className='user-search'>
                         {/* <p>Search User</p> */}
                         <input
-                            className='input'
+                            className='search-input'
                             type="text"
                             placeholder='Search by name...'
                             value={searchUser}
@@ -877,186 +879,274 @@ export default function Page() {
                                 <tr key={index}>
                                     <th>{index + 1}</th>
                                     <th>
-                                        <div className='profile-name'>
-                                            <span className='avtar'>{user.firstName?.charAt(0)?.toUpperCase()}</span>
+                                        <div className='user-profile'>
+                                            <span className='user-avatar'>{user.firstName?.charAt(0)?.toUpperCase()}</span>
                                             <span >{user.firstName + " " + user.lastName}</span>
                                         </div>
-                                        </th>
+                                    </th>
                                     <th><span className={`status-${user.status}`}>{user.status}</span></th>
-                                    <th>
-                                        <span style={{cursor : 'pointer'}} onClick={() => handlePinUnpin(user.id , 'user')} className='pin-box'><PinIcon color={'black'} fill={(Array.isArray(pinUser) && pinUser.includes(user.id)) ? 'black' : 'none'} /></span>
-                                        <button className={`action-btn-${userId === user.id ? "Active" : "Report"}`} onClick={() => userId === user.id ? '' : handleReportUser(user.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{userId === user.id ? "Active User" : "Report"}</button>
+                                    <th className='user-actions'>
+                                        <span style={{ cursor: 'pointer' }} onClick={() => handlePinUnpin(user.id, 'user')} className='pin-button'><PinIcon color={'black'} fill={(Array.isArray(pinUser) && pinUser.includes(user.id)) ? 'black' : 'none'} /></span>
+                                        <button className={`${userId === user.id ? "active-user-button" : "report-button"}`} onClick={() => userId === user.id ? '' : handleReportUser(user.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{userId === user.id ? "Active User" : "Report"}</button>
                                     </th>
                                 </tr>
                             )) : <tr><td colSpan='6'>No User</td></tr>}
                         </tbody>
                     </table>
 
-                <div className='box-detail'>
-                    <div className='box'>
-                        <p>Total User</p>
-                        <p style={{fontSize : '20px'}}>{totalUser}</p>
+                    <div className='vote-summary'>
+                        <div className='summary-card'>
+                            <p>Total User</p>
+                            <p style={{ fontSize: '20px' }}>{totalUser}</p>
+                        </div>
+                        <div className='summary-card'>
+                            <p>Total Candidates</p>
+                            <p style={{ fontSize: '20px' }}>{totalCandidates}</p>
+                        </div>
+                        <div className='summary-card'>
+                            <p>Total Votes</p>
+                            <p style={{ fontSize: '20px' }}>{totalVotes}</p>
+                        </div>
+                        <div className='summary-card'>
+                            <p>Undecided Votes</p>
+                            <p style={{ fontSize: '20px' }}>{undecidedVote}</p>
+                        </div>
+                        <div className='summary-card'>
+                            <p>Status</p>
+                            <p style={{ fontSize: '20px' }}  >{totalVotes === 0 ? 'Not Started' : undecidedVote > 0 ? 'OnGoing' : 'Completed'}</p>
+                        </div>
                     </div>
-                    <div className='box'>
-                        <p>Total Candidates</p>
-                        <p style={{fontSize : '20px'}}>{totalCandidates}</p>
-                    </div>
-                    <div className='box'>
-                        <p>Total Votes</p>
-                        <p style={{fontSize : '20px'}}>{totalVotes}</p>
-                    </div>
-                    <div className='box'>
-                        <p>Undecided Votes</p>
-                        <p style={{fontSize : '20px'}}>{undecidedVote}</p>
-                    </div>
-                    <div className='box'>
-                        <p>Status</p>
-                        <p style={{fontSize : '20px'}}  >{totalVotes === 0 ? 'Not Started' : undecidedVote > 0 ? 'OnGoing' : 'Completed'}</p>
-                    </div>
-                </div>
 
-                <div className='win-box'>
-                    <p>{totalVotes === 0 ? ' Election has not started yet' : ties.length > 1 ? 'Tie' : 'Winner'}  {totalVotes !== 0 && (ties ? [...new Set(ties.map(tie => tie.party))].join(', ') : finalResult.party)} {totalVotes !== 0 && `(${finalResult.votes} Votes)`}</p>
-                </div>
+                    <div className='winner-summary-card'>
+                        <p>{totalVotes === 0 ? ' Election has not started yet' : ties.length > 1 ? 'Tie' : 'Winner'}  {totalVotes !== 0 && (ties ? [...new Set(ties.map(tie => tie.party))].join(', ') : finalResult.party)} {totalVotes !== 0 && `(${finalResult.votes} Votes)`}</p>
+                    </div>
                 </div>
 
 
                 <div className='party-filter'>
                     {defaultData?.candidates?.length > 0 ? (
                         <>
-                            <div className="tabs" key="all">
+                            <div className="party-tabs" key="all">
                                 <input
                                     type="radio"
-                                    name="tab"
-                                    id="tab-all"
+                                    name="party-tab"
+                                    id="party-tab-all"
                                     value="All"
                                     onChange={() => handleFilterParty('All')}
                                     defaultChecked
                                 />
-                                <label htmlFor="tab-all" className="tab-btn">
+                                <label htmlFor="party-tab-all" className="party-tab-button">
                                     All
                                 </label>
                                 {[...new Set(
                                     defaultData.candidates.map(candidate => candidate.party)
                                 )].map((party, index) => (
-                                    <div className="tabs" key={party}>
+                                    <div className="party-tabs" key={party}>
                                         <input
                                             type="radio"
-                                            name="tab"
-                                            id={`tab${index + 1}`}
+                                            name="party-tab"
+                                            id={`party-tab${index + 1}`}
                                             value={party}
                                             onChange={(e) => handleFilterParty(e.target.value)}
                                         />
-                                        <label htmlFor={`tab${index + 1}`} className="tab-btn">
+                                        <label htmlFor={`party-tab${index + 1}`} className="party-tab-button">
                                             Party {party}
                                         </label>
                                     </div>
                                 ))}
                             </div>
                         </>
-                    ) : 'No Party Found'}
+                    ) : <span className="no-party-message">No Party Found</span>
+                    }
                 </div>
 
-                <div className="candidates">
-                    <div className='search-cadi'>
-                        <p>Search Candidate</p>
-                        <input className='input' type="text" placeholder='Search by name...' value={search} onChange={(e) => { setSearch(e.target.value); handleSearch(e.target.value) }} />
+                <div className='candidate-section'>
+                    <div className="candidate-toolbar">
+                        <div className='candidate-search'>
+                            <input className='search-input' type="text" placeholder='Search by name...' value={search} onChange={(e) => { setSearch(e.target.value); handleSearch(e.target.value) }} />
+                        </div>
+                        <div className='candidate-sort'>
+                            <select className='sort-select' value={sortBy} onChange={(e) => handleSort(e.target.value)} >
+                                <option value='high-low'>Votes : High to Low</option>
+                                <option value='low-high'>Votes : Low to High</option>
+                                <option value='name-asc'>Name : A to Z</option>
+                                <option value='name-desc'>Name : Z to A</option>
+                            </select>
+                        </div>
+                        <div className='top-candidates-action'>
+                            <button className='primary-action-button' onClick={handleTopTwo}>Show Top 2</button>
+                        </div>
                     </div>
-                    <div className='sort'>
-                        <p>Sort By</p>
-                        <select className='select' value={sortBy} onChange={(e) => handleSort(e.target.value)} >
-                            <option value='high-low'>Votes : High to Low</option>
-                            <option value='low-high'>Votes : Low to High</option>
-                            <option value='name-asc'>Name : A to Z</option>
-                            <option value='name-desc'>Name : Z to A</option>
-                        </select>
-                    </div>
-                    <div className='show-btn'>
-                        <button className='action-btn' onClick={handleTopTwo}>Show Top 2</button>
-                    </div>
-                </div>
 
-                <div>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <th>#</th>
-                                <th>Candidate</th>
-                                <th>Party</th>
-                                <th>Votes</th>
-                                <th>Percentage</th>
-                                <th>Action</th>
+                    <table className="candidate-table">
+                        <thead>
+                            <tr className="candidate-table-header">
+                                <th className="candidate-index">#</th>
+                                <th className="candidate-name-header">Candidate</th>
+                                <th className="candidate-party-header">Party</th>
+                                <th className="candidate-votes-header">Votes</th>
+                                <th className="candidate-percentage-header">Percentage</th>
+                                <th className="candidate-action-header">Action</th>
                             </tr>
-                            {filteredCandidates.length > 0 ? filteredCandidates.map((user, index) => {
-                                const isReported = RepotedUserId?.some(id => Number(id) === Number(user?.whoAdded));
-                                const isOwner = userId === user?.whoAdded;
-                                function countComments(commentList) {
-                                    let count = 0;
+                        </thead>
 
-                                    commentList.forEach(comment => {
-                                        count++;
-                                        if (comment.replies && comment.replies.length > 0) {
-                                            count += countComments(comment.replies);
-                                        }
-                                    });
+                        <tbody>
+                            {filteredCandidates.length > 0 ? (
+                                filteredCandidates.map((user, index) => {
+                                    const isReported = RepotedUserId?.some(
+                                        id => Number(id) === Number(user?.whoAdded)
+                                    );
 
-                                    return count;
-                                }
-                                const commentsArray = Array.isArray(commentList) ? commentList : [];
-                                const totalcount = countComments(commentsArray.filter((comment) => comment.candidate_id === user.id));
+                                    const isOwner = userId === user?.whoAdded;
 
-                                return (
-                                    <tr key={index}>
-                                        <th>{index + 1}</th>
-                                        <th>{user.candidates}</th>
-                                        <th>{user.party}</th>
-                                        <th>{user.votes}</th>
-                                        <th>{handlePercentage(user.votes) + '%'}</th>
-                                        <th>
-                                            <span style={{cursor : 'pointer'}} onClick={() => handlePinUnpin(user.id , 'candidate')}><PinIcon color={'black'} fill={pinCandidate.includes(user?.id) ? 'black' : 'none'}/></span>
-                                            <span disabled={isReported} onClick={() => handleLike(user.id)} style={{ color: user.id === likeId ? 'red' : 'black', cursor: isReported ? 'default' : 'pointer', pointerEvents: isReported ? 'none' : 'auto' }}><LikeIcon style={{ color: user.id === likeId ? 'red' : 'black' }} /> {Number(user.like || 0)}</span>
-                                            <span disabled={isReported} onClick={() => handleDislike(user.id)} style={{ color: user.id === disLikeId ? 'red' : 'black', cursor: isReported ? 'default' : 'pointer', pointerEvents: isReported ? 'none' : 'auto' }}><DislikeIcon style={{ color: user.id === disLikeId ? 'red' : 'black' }} /> {Number(user.dislike || 0)}</span>
-                                            <span onClick={() => {setOpenCommentModal(true) , setSelectCandidate(user)}} style={{ cursor: 'pointer', pointerEvents: isReported ? 'none' : 'auto' }} disabled={isReported}><CommentsIcon />{totalcount}</span>
-                                            <button disabled={isReported} className='action-btn' onClick={() => handleVotes(user.id)}  style={{ cursor: isReported ? 'default' : 'pointer' }}>Add Votes</button>
-                                            {!isOwner && <button className='action-btn' onClick={() => handleReport(user.id)} disabled={isReported} style={{ cursor: isReported ? 'default' : 'pointer' }}>Report</button>}
-                                            {isOwner && <button className='action-btn' onClick={() => handleRemoveCandidate(user.id)} style={{ background: 'red' }}>Remove candidate</button>}
-                                            {isOwner && user?.votes <= 0 && user?.like <= 0 && user?.dislike <= 0 && user?.editCandidate === false && <button className='action-btn' onClick={() => { setOpen(true), setSelectCandidate(user) }} style={{ background: '#eca265ff' }} >Update candidate</button>}
-                                        </th>
-                                    </tr>
-                                )
-                            }) : <tr><td colSpan='6'>No candidates</td></tr>}
-                            {(addedCandidates.length < 3 || addedCandidates === false) &&
+                                    function countComments(commentList) {
+                                        let count = 0;
+                                        commentList.forEach(comment => {
+                                            count++;
+                                            if (comment.replies?.length > 0) {
+                                                count += countComments(comment.replies);
+                                            }
+                                        });
+                                        return count;
+                                    }
+
+                                    const commentsArray = Array.isArray(commentList) ? commentList : [];
+
+                                    const totalcount = countComments(commentsArray.filter(comment => comment.candidate_id === user.id));
+
+                                    return (
+                                        <tr className="candidate-table-row" key={index}>
+                                            <td className="candidate-index">
+                                                {index + 1}
+                                            </td>
+
+                                            <td className="candidate-name">
+                                                {user.candidates}
+                                            </td>
+
+                                            <td className="candidate-party">
+                                                <span className="party-badge">
+                                                    {user.party}
+                                                </span>
+                                            </td>
+
+                                            <td className="candidate-votes">
+                                                {user.votes}
+                                            </td>
+
+                                            <td className="candidate-percentage">
+                                                {handlePercentage(user.votes)}%
+                                            </td>
+
+                                            <td className="candidate-actions">
+
+                                                <span className="pin-action" onClick={() => handlePinUnpin(user.id, 'candidate')} >
+                                                    <PinIcon
+                                                        color="black"
+                                                        fill={pinCandidate.includes(user?.id) ? "black" : "none"}
+                                                    />
+                                                </span>
+
+                                                <span className={`like-action ${isReported ? "action-disabled" : ""}`} onClick={() => !isReported && handleLike(user.id)} style={{color : user.id === likeId ? 'red' : 'inherit'}}>
+                                                    <LikeIcon />
+                                                    <span>{Number(user.like || 0)}</span>
+                                                </span>
+
+                                                <span className={`dislike-action ${isReported ? "action-disabled" : ""}`} onClick={() => !isReported && handleDislike(user.id)} style={{color : user.id === disLikeId ? 'red' : 'inherit'}}>
+                                                    <DislikeIcon />
+                                                    <span>{Number(user.dislike || 0)}</span>
+                                                </span>
+
+                                                <span className={`comment-action ${isReported ? "action-disabled" : ""}`} onClick={() => {
+                                                    if (!isReported) {
+                                                        setOpenCommentModal(true);
+                                                        setSelectCandidate(user);
+                                                    }
+                                                }}>
+                                                    <CommentsIcon />
+                                                    <span>{totalcount}</span>
+                                                </span>
+
+                                                <button className={`primary-action-button ${isReported ? "action-disabled" : ""}`} disabled={isReported} onClick={() => handleVotes(user.id)}>
+                                                    Add Votes
+                                                </button>
+
+                                                {!isOwner && (
+                                                    <button className={`report-button ${isReported ? "action-disabled" : ""}`} disabled={isReported} onClick={() => handleReport(user.id)}>
+                                                        Report
+                                                    </button>
+                                                )}
+
+                                                {isOwner && (
+                                                    <button className="remove-candidate-button" onClick={() => handleRemoveCandidate(user.id)}>
+                                                        Remove candidate
+                                                    </button>
+                                                )}
+
+                                                {isOwner && user?.votes <= 0 && user?.like <= 0 && user?.dislike <= 0 && user?.editCandidate === false && (
+                                                    <button className="update-candidate-button" onClick={() => { setOpen(true); setSelectCandidate(user) }}>
+                                                        Update candidate
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
                                 <tr>
-                                    <td colSpan='6'><button className='action-btn' data-modal="modal-create" onClick={() => { setOpen(true), setSelectCandidate('') }}>Add Candidate</button></td>
+                                    <td className="no-candidates" colSpan="6">
+                                        No candidates
+                                    </td>
                                 </tr>
-                            }
-                            <tr>
-                                <td colSpan='5'>Undecided Votes</td>
-                                <td colSpan='1'><button className='action-btn' onClick={handleUndicidedVoted}>Add Undecided Votes</button></td>
+                            )}
+
+                            {(addedCandidates.length < 3 || addedCandidates === false) && (
+                                <tr className="add-candidate-row">
+                                    <td colSpan="6">
+                                        <button className="add-candidate-button" onClick={() => { setOpen(true); setSelectCandidate("") }}>
+                                            Add Candidate
+                                        </button>
+                                    </td>
+                                </tr>
+                            )}
+
+                            <tr className="undecided-votes-row">
+                                <td colSpan="5">
+                                    <span>Undecided Votes</span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        className="undecided-votes-button"
+                                        onClick={handleUndicidedVoted}
+                                    >
+                                        Add Undecided Votes
+                                    </button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div className='win-box bottom-actions'>
-                    <strong className='total'>Total Votes : {totalVotes}</strong>
+                <div className='vote-total-section'>
+                    <strong className='vote-total'>Total Votes : {totalVotes}</strong>
                 </div>
 
-                <div className='win-box undecided-actions'>
-                    <div className='box'>
+                <div className='undecided-votes-section'>
+                    <div className='summary-card'>
                         <p>Undecided Votes</p>
                         <p>{undecidedVote}</p>
                     </div>
-                    <p>Distribute Undecided Votes equally (one by one) in round-robin order across all candidates.</p>
-                    <button className='action-btn' onClick={handleDisributeVoteUndecided}>Distribute Undecided Votes</button>
+                    <p className='undecided-description'>Distribute Undecided Votes equally (one by one) in round-robin order across all candidates.</p>
+                    <button className='primary-action-button' onClick={handleDisributeVoteUndecided}>Distribute Undecided Votes</button>
                 </div>
 
-                {reportedUsers.length > 0 && <div className='win-box reported-actions'>
-                    <div className='box'>
+                {reportedUsers.length > 0 && <div className='reported-users-section'>
+                    <div className='summary-card'>
                         <p>Reported User</p>
                         <p>{reportedUsers?.length}</p>
                     </div>
-                    <button className='action-btn' onClick={() => setOpenReportedUserModal(true)}>Show Reported User</button>
+                    <button className='primary-action-button' onClick={() => setOpenReportedUserModal(true)}>Show Reported User</button>
                 </div>}
             </div>
 

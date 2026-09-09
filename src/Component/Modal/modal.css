@@ -1,18 +1,14 @@
 .Modal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  position: fixed;
-  z-index: 1;
-  padding-top: 100px;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.4);
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
 }
+
+/* comment-modal */
 
 .modal-overlay {
   position: fixed;
@@ -35,6 +31,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: #000;
 }
 
 .modal-header {
@@ -76,7 +73,6 @@
   color: #555;
 }
 
-
 .comment-list {
   flex: 1;
   overflow-y: auto;
@@ -91,7 +87,6 @@
   background: #ccc;
   border-radius: 10px;
 }
-
 
 .comment-item-container {
   margin-bottom: 18px;
@@ -116,7 +111,6 @@
 }
 
 .comment-body {
-  /* flex: 1; */
   min-width: 0;
 }
 
@@ -198,7 +192,6 @@
   height: 30px;
   font-size: 12px;
 }
-
 
 .no-comment {
   height: 100%;
@@ -300,4 +293,143 @@
   font-size: 12px;
   margin-right: 10px;
   cursor: pointer;
+}
+
+/* report-modal */
+
+.reported-user-modal {
+    width: 55%;
+    max-width: 700px;
+    min-width: 450px;
+    background: #fff;
+    color: #000;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+.reported-user-modal h3 {
+    text-align: center;
+    margin: 0 0 22px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.reported-user-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.reported-user-table th,
+.reported-user-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee;
+
+    text-align: left;
+    font-size: 14px;
+}
+
+.reported-user-table thead th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.reported-user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.reported-user-table th:first-child,
+.reported-user-table td:first-child {
+    width: 60px;
+    text-align: center;
+}
+
+.reported-user-table th:last-child,
+.reported-user-table td:last-child {
+    width: 130px;
+    text-align: center;
+}
+
+.action-btn {
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.unreport-btn {
+  background: #2e7d32;
+  color: #fff;
+
+}
+.cancel-btn {
+    background: #ca2222d3;
+    color: #ffffff;
+    min-width: 90px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.no-user {
+    text-align: center !important;
+    padding: 25px !important;
+    color: #777;
+}
+
+/* candidate-modal */
+
+.candidate-modal {
+    width: 420px;
+    max-width: 90%;
+    background: #fff;
+    color: #000;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+    animation: modalOpen 0.2s ease-in-out;
+}
+
+.candidate-form h3 {
+    text-align: center;
+    margin: 0 0 25px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.candidates-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.candidate-btn {
+    border: none;
+    padding: 9px 20px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.submit-btn {
+    background: #619dda;
+    color: #fff;
 }
