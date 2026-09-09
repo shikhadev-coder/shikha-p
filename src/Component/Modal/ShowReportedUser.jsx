@@ -10,10 +10,12 @@ const ShowReportedUserModal = ({ onClose , reportedUser , onUnreport}) => {
     const handleUnReportedUser = (userId) => {
         const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
         const filterData = reportedList?.filter((item) => item.reportedUser !== userId);
-        const filterList = reportedUserList?.filter((item) =>item?.id !== userId);
+        const filterList = reportedUserList?.filter((item) => item?.id !== userId);
+        const previousLikeId = reportedList?.filter((item) => item.reportedUser === userId)?.flatMap((data) => data?.previousLikeId)
+        const previousDislikeId = reportedList?.filter((item) => item.reportedUser === userId)?.flatMap((data) => data?.previousDislikeId)
         setReportedUserList(filterList);
-        localStorage.setItem('reportedUser' , JSON.stringify(filterData));
-        onUnreport(userId);
+        localStorage.setItem('reportedUser', JSON.stringify(filterData));
+        onUnreport(userId, Number(previousLikeId), Number(previousDislikeId));
     }
 
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import './page.css'
 import { useDispatch, useSelector } from 'react-redux';
 import { reqToDeleteCandidate, reqToLogoutUserDetail, reqToUpdateDefaultData, reqToUpdateUserData } from '../Store/Slice/auth';
@@ -205,7 +205,7 @@ export default function Page() {
 
     const handleReport = (candidateId) => {
         setReportedCandidateId(candidateId);
-        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId)
+        saveUserData(updateCandidate, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId)
     };
 
     const handleSort = (value) => {
@@ -649,7 +649,7 @@ export default function Page() {
     }
 
     const handleReportUser = (userId) => {
-        const ReportedUserDetail = { whoReported: loginUserInfo?.id, reportedUser: userId };
+        const ReportedUserDetail = { whoReported: loginUserInfo?.id, reportedUser: userId , previousLikeId: loginUserData?.likeId ?? null,  previousDislikeId: loginUserData?.dislikeId ?? null };
 
         const canReportSelf = ReportedUserDetail.whoReported === ReportedUserDetail.reportedUser;
 
@@ -670,13 +670,24 @@ export default function Page() {
 
         const data = defaultData?.candidates?.find((candidate) => candidate.id === votedCandidateId)
         const beforeDistributedVotes = JSON.parse(localStorage.getItem('BeforeDistributedVotes'));
+        const userCandidates = defaultData?.candidates?.filter((candidate) => Number(candidate?.whoAdded) === Number(userId));
 
-        if (data?.whoAdded === userId) {
+        if (data?.whoAdded === userId || userCandidates?.length > 0) {
+            
+            const hasLikedCandidate = userCandidates.some((candidate) => Number(candidate.id) === Number(loginUserData?.likeId));
+            const hasDislikedCandidate = userCandidates.some((candidate) => Number(candidate.id) === Number(loginUserData?.dislikeId));
+
             const updatecandidate = defaultData?.candidates.map((candidate) => {
-                if (candidate.id === votedCandidateId) {
+                if (candidate.id === votedCandidateId || hasLikedCandidate || hasDislikedCandidate) {
+                     if (Number(candidate?.whoAdded) !== Number(userId)) {
+                        return candidate;
+                    }
                     return {
                         ...candidate,
-                        votes: candidate.votes - 1
+                        votes: candidate.id === votedCandidateId ? Math.max(0 , candidate.votes - 1) : candidate.votes,
+                        like: hasLikedCandidate && Number(candidate.id) === Number(loginUserData?.likeId) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
+                        dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1): Number(candidate.dislike || 0),
+
                     };
                 }
                 return candidate;
@@ -687,6 +698,8 @@ export default function Page() {
                 undecidedVote: defaultData?.undecidedVote + 1
             }
             setCandidates(updatecandidate);
+            setLikeId(hasLikedCandidate ? null : loginUserData?.likeId);
+            setDislikeId(hasDislikedCandidate ? null : loginUserData?.dislikeId);
             setUndecidedVote(updatedDefaultData?.undecidedVote);
 
             const userInfo = userData?.find((u) => u?.id === loginUserInfo?.id);
@@ -698,14 +711,16 @@ export default function Page() {
                 });
             }
 
-            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, 'undecided', true , likeId, disLikeId, null);
+            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, 'undecided', true , hasLikedCandidate ? null : loginUserData?.likeId, hasDislikedCandidate ? null : loginUserData?.dislikeId, null);
 
             if (beforeDistributedVotes) {
                 const updateBeforeDistributedVotes = beforeDistributedVotes?.candidates.map((candidate) => {
-                    if (candidate.id === votedCandidateId) {
+                    if (candidate.id === votedCandidateId || hasLikedCandidate || hasDislikedCandidate) {
                         return {
                             ...candidate,
-                            votes: Math.max(0, candidate.votes - 1)
+                            votes: candidate.id === votedCandidateId ? Math.max(0, candidate.votes - 1) : candidate.votes,
+                            like: hasLikedCandidate && Number(candidate.id) === Number(loginUserData?.likeId) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
+                            dislike: hasDislikedCandidate && Number(candidate.id) === Number(loginUserData?.dislikeId) ? Math.max(0, Number(candidate.dislike || 0) - 1): Number(candidate.dislike || 0),
                         };
                     }
                     return candidate;
@@ -861,44 +876,50 @@ export default function Page() {
                             {userList.length > 0 ? userList?.map((user, index) => (
                                 <tr key={index}>
                                     <th>{index + 1}</th>
-                                    <th>{user.firstName + " " + user.lastName}</th>
-                                    <th>{user.status}</th>
                                     <th>
-                                        <span style={{cursor : 'pointer'}} onClick={() => handlePinUnpin(user.id , 'user')}><PinIcon color={'black'} fill={(Array.isArray(pinUser) && pinUser.includes(user.id)) ? 'black' : 'none'} /></span>
-                                        <button className='action-btn' onClick={() => userId === user.id ? '' : handleReportUser(user.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{userId === user.id ? "Active User" : "Report"}</button>
+                                        <div className='profile-name'>
+                                            <span className='avtar'>{user.firstName?.charAt(0)?.toUpperCase()}</span>
+                                            <span >{user.firstName + " " + user.lastName}</span>
+                                        </div>
+                                        </th>
+                                    <th><span className={`status-${user.status}`}>{user.status}</span></th>
+                                    <th>
+                                        <span style={{cursor : 'pointer'}} onClick={() => handlePinUnpin(user.id , 'user')} className='pin-box'><PinIcon color={'black'} fill={(Array.isArray(pinUser) && pinUser.includes(user.id)) ? 'black' : 'none'} /></span>
+                                        <button className={`action-btn-${userId === user.id ? "Active" : "Report"}`} onClick={() => userId === user.id ? '' : handleReportUser(user.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{userId === user.id ? "Active User" : "Report"}</button>
                                     </th>
                                 </tr>
                             )) : <tr><td colSpan='6'>No User</td></tr>}
                         </tbody>
                     </table>
-                </div>
 
                 <div className='box-detail'>
                     <div className='box'>
                         <p>Total User</p>
-                        <p>{totalUser}</p>
+                        <p style={{fontSize : '20px'}}>{totalUser}</p>
                     </div>
                     <div className='box'>
                         <p>Total Candidates</p>
-                        <p>{totalCandidates}</p>
+                        <p style={{fontSize : '20px'}}>{totalCandidates}</p>
                     </div>
                     <div className='box'>
                         <p>Total Votes</p>
-                        <p>{totalVotes}</p>
+                        <p style={{fontSize : '20px'}}>{totalVotes}</p>
                     </div>
                     <div className='box'>
                         <p>Undecided Votes</p>
-                        <p>{undecidedVote}</p>
+                        <p style={{fontSize : '20px'}}>{undecidedVote}</p>
                     </div>
                     <div className='box'>
                         <p>Status</p>
-                        <p>{totalVotes === 0 ? 'Not Started' : undecidedVote > 0 ? 'OnGoing' : 'Completed'}</p>
+                        <p style={{fontSize : '20px'}}  >{totalVotes === 0 ? 'Not Started' : undecidedVote > 0 ? 'OnGoing' : 'Completed'}</p>
                     </div>
                 </div>
 
                 <div className='win-box'>
                     <p>{totalVotes === 0 ? ' Election has not started yet' : ties.length > 1 ? 'Tie' : 'Winner'}  {totalVotes !== 0 && (ties ? [...new Set(ties.map(tie => tie.party))].join(', ') : finalResult.party)} {totalVotes !== 0 && `(${finalResult.votes} Votes)`}</p>
                 </div>
+                </div>
+
 
                 <div className='party-filter'>
                     {defaultData?.candidates?.length > 0 ? (
@@ -1047,8 +1068,15 @@ export default function Page() {
             {openReportedUserModal && <ShowReportedUserModal
                 onClose={() => setOpenReportedUserModal(false)}
                 reportedUser={reportedUsers}
-                onUnreport={(userId) => {
+                onUnreport={(userId, previousLikeId, previousDislikeId) => {
                     setReportedUserIds((prev) => prev.filter((id) => id !== userId));
+                    if (previousLikeId) {
+                        handleLike(previousLikeId);
+                    }
+
+                    if (previousDislikeId) {
+                        handleDislike(previousDislikeId);
+                    }
                 }}
             />}
             {openCommentModal && <CommentsModal
