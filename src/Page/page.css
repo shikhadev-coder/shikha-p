@@ -59,11 +59,9 @@ select {
 
 .user-name {
     min-width: 85px;
-    padding: 9px 13px;
     border-radius: 8px;
-    background: #f7faff;
     color: #30435d;
-    font-size: 11px;
+    font-size: 15px;
     text-align: center;
 }
 
@@ -78,11 +76,6 @@ select {
     font-weight: 600;
     cursor: pointer;
 }
-
-
-/* =========================
-   USER MANAGEMENT
-========================= */
 
 .user-management {
     margin-top: 5px;
@@ -108,7 +101,7 @@ select {
     outline: none;
     background: #fff;
     color: #34495e;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .search-input:focus {
@@ -331,6 +324,11 @@ table tr:last-child th {
     cursor: pointer;
 }
 
+.no-party-message {
+    padding: 20px !important;
+    text-align: center !important;
+    color: #8998a8 !important;
+}
 input[type="radio"]:checked+.party-tab-button {
     background: #438df0;
     border-color: #438df0;
@@ -387,7 +385,7 @@ input[type="radio"]:checked+.party-tab-button {
     outline: none;
     background: #fff;
     color: #40546b;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .top-candidates-action {
@@ -511,7 +509,9 @@ input[type="radio"]:checked+.party-tab-button {
 .remove-candidate-button,
 .update-candidate-button,
 .add-candidate-button,
-.undecided-votes-button {
+.undecided-votes-button,
+.undecided-action-button,
+.reported-action-button {
     min-height: 28px;
     padding: 5px 11px;
     border: none;
@@ -536,6 +536,14 @@ input[type="radio"]:checked+.party-tab-button {
 .add-candidate-button:hover,
 .undecided-votes-button:hover {
     background: #18a97b;
+}
+
+.reported-action-button{
+    background-color: rgb(112, 202, 238);
+}
+
+.undecided-action-button{
+    background-color: #aa8642;
 }
 
 .report-button {

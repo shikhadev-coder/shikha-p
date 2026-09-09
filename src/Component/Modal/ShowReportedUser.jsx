@@ -1,3 +1,4 @@
+import { useSelector } from 'react-redux';
 import './modal.css';
 import { useEffect, useState } from "react";
 
@@ -5,17 +6,18 @@ import { useEffect, useState } from "react";
 const ShowReportedUserModal = ({ onClose, reportedUser, onUnreport }) => {
 
     const [reportedUserList, setReportedUserList] = useState(reportedUser);
+        const { loginUserInfo } = useSelector(state => state.auth);
 
 
     const handleUnReportedUser = (userId) => {
         const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
-        const filterData = reportedList?.filter((item) => item.reportedUser !== userId);
-        const filterList = reportedUserList?.filter((item) => item?.id !== userId);
-        const previousLikeId = reportedList?.filter((item) => item.reportedUser === userId)?.flatMap((data) => data?.previousLikeId)
-        const previousDislikeId = reportedList?.filter((item) => item.reportedUser === userId)?.flatMap((data) => data?.previousDislikeId)
+        const filterData = reportedList?.filter((user) => loginUserInfo?.id !== user?.whoReported || user?.reportedUser !== userId)
+        const filterList = reportedUserList?.filter((item) => item?.id !== userId && loginUserInfo?.id !== item?.whoReported );
+        const previousLikeId = reportedList?.filter((item) => item.reportedUser === userId && loginUserInfo?.id === item?.whoReported )?.flatMap((data) => data?.previousLikeId)
+        const previousDislikeId = reportedList?.filter((item) => item.reportedUser === userId && loginUserInfo?.id === item?.whoReported)?.flatMap((data) => data?.previousDislikeId)
         setReportedUserList(filterList);
         localStorage.setItem('reportedUser', JSON.stringify(filterData));
-        onUnreport(userId, Number(previousLikeId), Number(previousDislikeId));
+        onUnreport(userId, previousLikeId?.flat(), previousDislikeId?.flat());
     }
 
     useEffect(() => {
