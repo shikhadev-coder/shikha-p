@@ -11,6 +11,7 @@ import {
 } from "../../Store/Slice/comment";
 import { DeleteIcon, DislikeIcon, EditIcon, ExpandLess, ExpandMore, LikeIcon, ReplyIcon, ReportIcon } from "../icon";
 import ReportModal from "./ReportModal";
+import { toast } from "react-toastify";
 
 const MAX_DEPTH = 3;
 const depthColors = {
@@ -20,7 +21,7 @@ const depthColors = {
     3: '#d37c76ff',
 };
 
-const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts ,setOpenReportModal , setSelectedComment}) => {
+const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts, setOpenReportModal, setSelectedComment, ReportedUsers, repostedUser, ReportedUsersCandidate }) => {
 
 
     return (
@@ -38,83 +39,91 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
                                 borderLeft: depth > 0 ? `2px solid ${depthColors[Math.min(depth, MAX_DEPTH)]}` : `2px solid ${depthColors[0]}`
                             }}
                         >
+                            {/* {console.log(ReportedUsers.includes(item?.author?.user_id) , ReportedUsers)}
+                            {console.log(ReportedUsersCandidate.includes(item?.id) , ReportedUsersCandidate ,item?.id)} */}
                             <div className="reply-item">
-
-                                <div className="comment-avatar reply-avatar">
-                                    {item?.author?.username?.charAt(0)?.toUpperCase()}
-                                </div>
-
-                                <div className="comment-body">
-
-                                    <div className="comment-user">
-                                        {item?.author?.username}
-                                    </div>
-
-                                    <div className="comment-text">
-                                        {item?.content}
-                                    </div>
-
-                                    <div className="comment-action-container">
-                                        <div style={{ cursor: "pointer" }}>
-                                            <span onClick={() => handleLike(item?.id)} style={{ color: likeId.includes(item?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(item?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[item?.id] || 0, 0)}</span>
-                                            {/*  item?.like === true*/}
-                                        </div>
-                                        <div style={{ cursor: "pointer" }}>
-                                            <span onClick={() => handleDislike(item?.id)} style={{ color: disLikeId.includes(item?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(item?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[item?.id] || 0 , 0)}</span>
-                                            {/*  item?.dislike === true*/}
-                                        </div>
-                                        <div className="comment-actions">
-                                            <button
-                                                onClick={() => {
-                                                    handleReply(item);
-                                                    inputRef.current?.focus();
-                                                }}
-                                            >
-                                                <ReplyIcon />
-                                                Reply
-                                            </button>
+                                {ReportedUsers.includes(item?.author?.user_id)
+                                    // && ReportedUsersCandidate.includes(item?.id) 
+                                    ? <span className="reported-label">This comment is no longer visible.</span> :
+                                    <>
+                                        <div className="comment-avatar reply-avatar">
+                                            {item?.author?.username?.charAt(0)?.toUpperCase()}
                                         </div>
 
-                                        {item?.author?.user_id === loginUserInfo?.id && (
-                                            <>
+                                        <div className="comment-body">
+
+                                            <div className="comment-user">
+                                                {item?.author?.username}
+                                            </div>
+
+                                            <div className="comment-text">
+                                                {item?.content}
+                                            </div>
+
+                                            <div className="comment-action-container">
+                                                <div style={{ cursor: "pointer" }}>
+                                                    <span onClick={() => handleLike(item?.id)} style={{ color: likeId.includes(item?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(item?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[item?.id] || 0, 0)}</span>
+                                                    {/*  item?.like === true*/}
+                                                </div>
+                                                <div style={{ cursor: "pointer" }}>
+                                                    <span onClick={() => handleDislike(item?.id)} style={{ color: disLikeId.includes(item?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(item?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[item?.id] || 0, 0)}</span>
+                                                    {/*  item?.dislike === true*/}
+                                                </div>
                                                 <div className="comment-actions">
                                                     <button
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                comments.id,
-                                                                item.id
-                                                            )
-                                                        }
+                                                        disabled={repostedUser.includes(item?.author?.user_id)}
+                                                        onClick={() => {
+                                                            handleReply(item);
+                                                            inputRef.current?.focus();
+                                                        }}
                                                     >
-                                                        <DeleteIcon />
-                                                        Delete
+                                                        <ReplyIcon />
+                                                        Reply
                                                     </button>
                                                 </div>
 
-                                                {!hasReplies && (
-                                                    <div className="comment-actions">
-                                                        <button
-                                                            onClick={() => {
-                                                                setEdit(item);
-                                                                inputRef.current?.focus();
-                                                            }}
-                                                        >
-                                                            <EditIcon />
-                                                            Edit
-                                                        </button>
-                                                    </div>
+                                                {item?.author?.user_id === loginUserInfo?.id && (
+                                                    <>
+                                                        <div className="comment-actions">
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        comments.id,
+                                                                        item.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                <DeleteIcon />
+                                                                Delete
+                                                            </button>
+                                                        </div>
+
+                                                        {!hasReplies && (
+                                                            <div className="comment-actions">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setEdit(item);
+                                                                        inputRef.current?.focus();
+                                                                    }}
+                                                                >
+                                                                    <EditIcon />
+                                                                    Edit
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
-                                            </>
-                                        )}
-                                        {item?.author?.user_id !== loginUserInfo?.id &&
-                                            <div className="comment-actions">
-                                                <button onClick={() => {setOpenReportModal(true); setSelectedComment(item)}}><ReportIcon width={15} height={15} />Report</button>
+                                                {item?.author?.user_id !== loginUserInfo?.id &&
+                                                    <div className="comment-actions">
+                                                        <button onClick={() => { setOpenReportModal(true); setSelectedComment(item) }}><ReportIcon width={15} height={15} />Report</button>
+                                                    </div>
+                                                }
+
                                             </div>
-                                        }
 
-                                    </div>
-
-                                </div>
+                                        </div>
+                                    </>
+                                }
                             </div>
 
                             {hasReplies && (
@@ -152,6 +161,9 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
                                 likeCounts={likeCounts}
                                 setOpenReportModal={setOpenReportModal}
                                 setSelectedComment={setSelectedComment}
+                                ReportedUsers={ReportedUsers}
+                                repostedUser={repostedUser}
+                                ReportedUsersCandidate={ReportedUsersCandidate}
                             />
                         )}
 
@@ -170,13 +182,15 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
     const [replyingTo, setReplyingTo] = useState(null);
     const [edit, setEdit] = useState('');
     const [expandReplies, setExpandReplies] = useState({});
-    const [openReportModal , setOpenReportModal] = useState(false)
-    const [selectedComment , setSelectedComment] = useState({});
+    const [openReportModal, setOpenReportModal] = useState(false)
+    const [selectedComment, setSelectedComment] = useState({});
 
     const inputRef = useRef(null);
 
-    const { loginUserInfo } = useSelector(state => state.auth);
-    const { commentList} = useSelector(state => state.comment);
+    const { loginUserInfo, defaultData, userData } = useSelector(state => state.auth);
+    const { commentList } = useSelector(state => state.comment);
+
+    const loginUserData = useMemo(() => userData?.find((user) => user?.id === loginUserInfo?.id), [userData, loginUserInfo?.id]);
 
     const filterComment = Array.isArray(commentList) ? commentList.filter((comment) => comment?.candidate_id === candidate?.id) : [];
 
@@ -184,13 +198,29 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
         return comments.filter(comment => {
             const isReported = comment?.isReported?.some(report => report?.whoReported === loginUserInfo?.id)
             return !isReported
-        }).map(comment => ({ ...comment, replies: filterReportedComments(comment?.replies || [])}));
+        }).map(comment => ({ ...comment, replies: filterReportedComments(comment?.replies || []) }));
     };
 
-    const visibleComments = useMemo(() => {
-        return filterReportedComments(filterComment);
-    }, [filterComment, loginUserInfo?.id]);
+    const filterReportedCandidateComment = (comments) => {
+        return comments?.filter(comment => {
+            const authorId = Number(comment?.author?.user_id);
+            return !ReportedUsers?.includes(authorId);
+        }).map(comment => ({ ...comment, replies: filterReportedCandidateComment(comment?.replies || []) }))
+    }
 
+    const ReportedUsers = defaultData?.report?.flatMap(report => Number(report?.whoReported)) || [];
+    const ReportedUsersCandidate = defaultData?.report?.flatMap(report => Number(report?.reportedCandidateId)) || [];
+
+    // const visibleComments = useMemo(() => {
+    //     const comments = filterReportedComments(filterComment || []);
+
+    //     return filterReportedCandidateComment(comments)
+
+    // }, [filterComment, loginUserInfo?.id ,ReportedUsers]);
+    const visibleComments = useMemo(() => {
+        return filterReportedComments(filterComment || [])
+
+    }, [filterComment, loginUserInfo?.id]);
 
     // const visibleComments = useMemo(() => {
     //     return filterComment.filter(comment => {
@@ -204,13 +234,15 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
 
     const like = filterComment?.flatMap((comment) => comment?.likeId)?.map((commentArray) => commentArray?.commentId || 0);
 
-    const likeCounts = like.reduce((acc, id) => { acc[id] = (acc[id] || 0) + 1;
+    const likeCounts = like.reduce((acc, id) => {
+        acc[id] = (acc[id] || 0) + 1;
         return acc;
     }, {});
 
     const disLike = filterComment?.flatMap((comment) => comment?.disLikeId)?.map((commentArray) => commentArray?.commentId || 0)
 
-    const disLikeCounts = disLike.reduce((acc, id) => { acc[id] = (acc[id] || 0) + 1;
+    const disLikeCounts = disLike.reduce((acc, id) => {
+        acc[id] = (acc[id] || 0) + 1;
         return acc;
     }, {});
 
@@ -252,7 +284,6 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
         });
     };
 
-
     // const addReplyCounts = (comments) => {
     //     if (!comments || !Array.isArray(comments)) return [];
 
@@ -293,7 +324,7 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
             candidate_id: candidate?.id,
             createdAt: new Date().toISOString(),
             replies: [],
-            isReported : [],
+            isReported: [],
             likeId: [],
             disLikeId: [],
             // like : false,
@@ -302,7 +333,7 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
         dispatch(reqToAddComment(commentData));
         setComment("");
     };
-
+    const repostedUser = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : []
     const handleReply = (comments) => {
         setReplyingTo(comments);
         setReply("");
@@ -323,7 +354,7 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                     username: loginUserInfo.firstName
                 },
                 replies: [],
-                isReported : [],
+                isReported: [],
                 // like : false,
                 // dislike : false, 
                 createdAt: new Date().toISOString()
@@ -379,59 +410,69 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                     className="comment-item-container"
                                     key={comments.id}
                                 >
+                                    {/* {console.log(ReportedUsers.includes(comments?.author?.user_id) , ReportedUsers)} */}
+                                    {/* {console.log(ReportedUsersCandidate.includes(comments?.id) , comments ,ReportedUsersCandidate)} */}
                                     <div className="comment-item">
-                                        <div className="comment-avatar">
-                                            {comments?.author?.username?.charAt(0)?.toUpperCase()}
-                                        </div>
+                                        {
+                                            ReportedUsers.includes(comments?.author?.user_id)
+                                                //  && ReportedUsersCandidate.includes(comments?.id) 
+                                                ? <span className="reported-label">This comment is no longer visible.</span> :
+                                                <>
+                                                    <div className="comment-avatar">
+                                                        {comments?.author?.username?.charAt(0)?.toUpperCase()}
+                                                    </div>
 
-                                        <div className="comment-body">
-                                            <div className="comment-user">
-                                                {comments?.author?.username}
-                                            </div>
-                                            <div className="comment-text">
-                                                {comments?.content}
-                                            </div>
-                                            <div className="comment-action-container">
-                                                <div style={{ cursor: "pointer" }}>
-                                                    <span onClick={() => handleLike(comments?.id)} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[comments?.id] || 0, 0)}</span>
-                                                    {/* comments?.like === true */}
-                                                </div>
-                                                <div style={{ cursor: "pointer" }}>
-                                                    <span onClick={() => handleDislike(comments?.id)} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[comments?.id] || 0 , 0)}</span>
-                                                    {/* comments?.dislike === true */}
-                                                </div>
-                                                <div className="comment-actions">
-                                                    <button onClick={() => { handleReply(comments); inputRef.current?.focus(); }}>
-                                                        <ReplyIcon />
-                                                        Reply
-                                                    </button>
-                                                </div>
-                                                {comments?.author?.user_id === loginUserInfo?.id && (
-                                                    <>
-                                                        <div className="comment-actions">
-                                                            <button onClick={() => handleDelete(comments.id)}>
-                                                                <DeleteIcon />
-                                                                Delete
-                                                            </button>
+                                                    <div className="comment-body">
+                                                        <div className="comment-user">
+                                                            {comments?.author?.username}
                                                         </div>
-                                                        {comments?.replies?.length === 0 && (
+                                                        <div className="comment-text">
+                                                            {comments?.content}
+                                                        </div>
+                                                        <div className="comment-action-container">
+                                                            <div style={{ cursor: "pointer" }}>
+                                                                <span onClick={() => handleLike(comments?.id)} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[comments?.id] || 0, 0)}</span>
+                                                                {/* comments?.like === true */}
+                                                            </div>
+                                                            <div style={{ cursor: "pointer" }}>
+                                                                <span onClick={() => handleDislike(comments?.id)} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[comments?.id] || 0, 0)}</span>
+                                                                {/* comments?.dislike === true */}
+                                                            </div>
                                                             <div className="comment-actions">
-                                                                <button onClick={() => { setEdit(comments); inputRef.current?.focus(); }}>
-                                                                    <EditIcon />
-                                                                    Edit
+                                                                <button disabled={repostedUser.includes(comments?.author?.user_id)} onClick={() => { setReplyingTo(null); handleReply(comments); inputRef.current?.focus(); }}>
+                                                                    <ReplyIcon />
+                                                                    Reply
                                                                 </button>
                                                             </div>
-                                                        )}
-                                                    </>
-                                                )}
-                                                {comments?.author?.user_id !== loginUserInfo?.id &&
-                                                    <div className="comment-actions">
-                                                        <button onClick={() =>{ setOpenReportModal(true); setSelectedComment(comments)}}><ReportIcon width={15} height={15} />Report</button>
+                                                            {comments?.author?.user_id === loginUserInfo?.id && (
+                                                                <>
+                                                                    <div className="comment-actions">
+                                                                        <button onClick={() => handleDelete(comments.id)}>
+                                                                            <DeleteIcon />
+                                                                            Delete
+                                                                        </button>
+                                                                    </div>
+                                                                    {comments?.replies?.length === 0 && (
+                                                                        <div className="comment-actions">
+                                                                            <button onClick={() => { setEdit(comments); inputRef.current?.focus(); }}>
+                                                                                <EditIcon />
+                                                                                Edit
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                            {comments?.author?.user_id !== loginUserInfo?.id &&
+                                                                <div className="comment-actions">
+                                                                    <button onClick={() => { setOpenReportModal(true); setSelectedComment(comments) }}><ReportIcon width={15} height={15} />Report</button>
+                                                                </div>
+                                                            }
+                                                        </div>
                                                     </div>
-                                                }
-                                            </div>
-                                        </div>
+                                                </>
+                                        }
                                     </div>
+
                                     {comments?.replies?.length > 0 && comments?.replies?.length > 0 && comments.replies[0]?.isReported?.every((comment) => comment?.whoReported !== loginUserInfo?.id) &&
                                         <div className="view-replies-container">
                                             <span
@@ -464,6 +505,9 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                             likeCounts={likeCounts}
                                             setOpenReportModal={setOpenReportModal}
                                             setSelectedComment={setSelectedComment}
+                                            ReportedUsers={ReportedUsers}
+                                            repostedUser={repostedUser}
+                                            ReportedUsersCandidate={ReportedUsersCandidate}
                                         />
                                     )}
                                 </div>
@@ -476,7 +520,7 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                         )}
                     </div>
 
-                    {replyingTo && (
+                    {replyingTo !== null && (
                         <div className="reply-preview">
                             <div>Replying to {" "} <strong> {replyingTo?.author?.username} </strong></div>
                             <button onClick={() => setReplyingTo(null)}> × </button>

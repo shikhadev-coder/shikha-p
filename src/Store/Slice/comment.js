@@ -300,8 +300,8 @@ const ReportComment = ({ comments, commentId, whoReported }) => {
         // console.log(JSON.parse(JSON.stringify(currentComment)) , 'currentComment')
 
         if (currentComment.id === commentId) {
-            const data = {whoReported: whoReported}
-            currentComment.isReported = [...currentComment.isReported , data];
+            const data = { whoReported: whoReported }
+            currentComment.isReported = [...currentComment.isReported, data];
 
             break;
         }
@@ -350,7 +350,7 @@ const commentSlice = createSlice({
             localStorage.setItem("comment", JSON.stringify(state.commentList));
         },
         reqToAddLike: (state, action) => {
-            const { commentId , whoLike } = action.payload;
+            const { commentId, whoLike } = action.payload;
             // state.commentList = addLikeNested({ comment: state.commentList, commentId: commentId })
             // console.log(JSON.parse(JSON.stringify(state.commentList)))
 
@@ -361,7 +361,7 @@ const commentSlice = createSlice({
                     return comment;
                 }
 
-                const like = {commentId : commentId ,  whoLike : whoLike}
+                const like = { commentId: commentId, whoLike: whoLike }
 
                 const currentLikes = comment?.likeId || [];
                 const currentDislikes = comment?.disLikeId || [];
@@ -379,7 +379,7 @@ const commentSlice = createSlice({
             localStorage.setItem("comment", JSON.stringify(state.commentList));
         },
         reqToAddDislike: (state, action) => {
-            const { commentId , whoDislike} = action.payload;
+            const { commentId, whoDislike } = action.payload;
 
             // state.commentList = addDislikeNested({ comment: state.commentList, commentId: commentId })
             // console.log(JSON.parse(JSON.stringify(state.commentList)))
@@ -391,7 +391,7 @@ const commentSlice = createSlice({
                     return comment;
                 }
 
-                const dislike = {commentId : commentId ,  whoDislike : whoDislike}
+                const dislike = { commentId: commentId, whoDislike: whoDislike }
 
                 const currentLikes = comment?.likeId || [];
                 const currentDislikes = comment?.disLikeId || [];
@@ -409,11 +409,11 @@ const commentSlice = createSlice({
         },
         reqToReportComment: (state, action) => {
             const { reportedCommentId, whoReported } = action.payload;
-            state.commentList = ReportComment({comments : state.commentList , commentId : reportedCommentId , whoReported : whoReported});
+            state.commentList = ReportComment({ comments: state.commentList, commentId: reportedCommentId, whoReported: whoReported });
             localStorage.setItem("comment", JSON.stringify(state.commentList));
         }
     }
 });
 
 export default commentSlice.reducer;
-export const { reqToAddComment, reqToDeleteComment, reqToUpdateComment, reqToReplyToComment, reqToAddLike, reqToAddDislike , reqToReportComment} = commentSlice.actions;
+export const { reqToAddComment, reqToDeleteComment, reqToUpdateComment, reqToReplyToComment, reqToAddLike, reqToAddDislike, reqToReportComment } = commentSlice.actions;

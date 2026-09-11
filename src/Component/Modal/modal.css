@@ -181,6 +181,13 @@
   border-left: 2px solid #eee;
 }
 
+.reported-label{
+  background-color: rgba(214, 30, 30, 0.356);
+  padding: 15px 39px;
+  color: whitesmoke;
+  font-size: 15px;
+}
+
 .reply-item {
   display: flex;
   gap: 10px;

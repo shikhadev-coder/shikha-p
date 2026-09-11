@@ -1,22 +1,20 @@
 import { useSelector } from 'react-redux';
 import './modal.css';
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 
 const ShowReportedUserModal = ({ onClose, reportedUser, onUnreport }) => {
 
     const [reportedUserList, setReportedUserList] = useState(reportedUser);
-        const { loginUserInfo } = useSelector(state => state.auth);
-
+    const { loginUserInfo, userData } = useSelector(state => state.auth);
+    const loginUserData = useMemo(() => userData?.find((user) => user?.id === loginUserInfo?.id), [userData, loginUserInfo?.id]);
 
     const handleUnReportedUser = (userId) => {
-        const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
-        const filterData = reportedList?.filter((user) => loginUserInfo?.id !== user?.whoReported || user?.reportedUser !== userId)
-        const filterList = reportedUserList?.filter((item) => item?.id !== userId && loginUserInfo?.id !== item?.whoReported );
-        const previousLikeId = reportedList?.filter((item) => item.reportedUser === userId && loginUserInfo?.id === item?.whoReported )?.flatMap((data) => data?.previousLikeId)
+        const reportedList = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)) : [];
+        const filterList = reportedUserList?.filter((item) => item?.id !== userId && loginUserInfo?.id !== item?.whoReported);
+        const previousLikeId = reportedList?.filter((item) => item.reportedUser === userId && loginUserInfo?.id === item?.whoReported)?.flatMap((data) => data?.previousLikeId)
         const previousDislikeId = reportedList?.filter((item) => item.reportedUser === userId && loginUserInfo?.id === item?.whoReported)?.flatMap((data) => data?.previousDislikeId)
         setReportedUserList(filterList);
-        localStorage.setItem('reportedUser', JSON.stringify(filterData));
         onUnreport(userId, previousLikeId?.flat(), previousDislikeId?.flat());
     }
 

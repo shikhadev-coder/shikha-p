@@ -29,7 +29,7 @@ export default function Page() {
     const { commentList } = useSelector(state => state.comment);
 
     const userId = loginUserInfo?.id;
-    const loginUserData = useMemo(() => userData?.find((user) => user?.id === userId), [userData, userId]);
+    const loginUserData = useMemo(() => userData?.find((user) => user?.id === userId), [userData, userId, defaultData]);
 
     const InitialData = Array.isArray(defaultData?.candidates) && defaultData.candidates.length > 0 ? defaultData.candidates : [];
     const InitialUndicidedVote = defaultData?.undecidedVote ?? loginUserData?.undecidedVote ?? initialUndicidedVoted;
@@ -69,11 +69,9 @@ export default function Page() {
     const [openReportedUserModal, setOpenReportedUserModal] = useState(false);
     const [openCommentModal, setOpenCommentModal] = useState(false);
 
-    const [reportedUserIds, setReportedUserIds] = useState(() => {
-        const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
-
-        return reportedList.filter(user => user?.whoReported === loginUserInfo?.id).map(user => user.reportedUser);
-    });
+    const [reportedUserIds, setReportedUserIds] = useState(() =>
+        Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : []
+    );
 
     const [filteredCandidates, setFilteredCandidates] = useState(candidates);
 
@@ -85,11 +83,10 @@ export default function Page() {
     const totalUser = userDetail.length;
     const finalResult = Array.isArray(candidates) && candidates.length > 0 ? candidates.reduce((winner, candidate) => (candidate.votes > winner.votes) ? candidate : winner) : [];
 
-    const reportedList = JSON.parse(localStorage.getItem('reportedUser')) || [];
-    const RepotedUserId = reportedList.filter(user => user?.whoReported === loginUserInfo?.id).map((user) => user.reportedUser);
+    const reportedId = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : [];
     const reportedUsers = useMemo(() => userDetail?.filter((user) => reportedUserIds?.includes(user.id)), [userDetail, reportedUserIds]);
 
-    const addedCandidates = defaultData?.candidates?.length > 0 && defaultData?.candidates.filter((user) => Number(user.whoAdded) === Number(loginUserInfo?.id));
+    const addedCandidates = Array.isArray(defaultData?.candidates) ? defaultData.candidates.filter((user) => Number(user.whoAdded) === Number(loginUserInfo?.id)) : [];
 
     const ties = useMemo(() => {
         if (!finalResult || totalVotes === 0) return [];
@@ -110,7 +107,7 @@ export default function Page() {
         setDislikeId(InitialDisLike);
     }, [userId, defaultData, userData]);
 
-    const saveUserData = (newCandidates, newUndecided, newUserVotes, undecidedVotesDistributed = false, likeId = [], disLikeId = [], reportedCandidateId = null) => {
+    const saveUserData = (newCandidates, newUndecided, newUserVotes, undecidedVotesDistributed = false, likeId = [], disLikeId = [], reportedCandidateId = null, reportedUserDetail = loginUserData?.reportedUserDetail ?? []) => {
 
         const currentUserDataEntry = {
             id: userId,
@@ -118,6 +115,7 @@ export default function Page() {
             votedCandidateId: newUserVotes,
             likeId: Array.isArray(likeId) ? likeId : [],
             dislikeId: Array.isArray(disLikeId) ? disLikeId : [],
+            reportedUserDetail: reportedUserDetail
         };
 
         const updatedAllUsersStorage = upsertUserIntoStorage(currentUserDataEntry, 'userData');
@@ -205,7 +203,7 @@ export default function Page() {
 
     const handleReport = (candidateId) => {
         setReportedCandidateId(candidateId);
-        saveUserData(updateCandidate, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId)
+        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId)
     };
 
     const handleSort = (value) => {
@@ -437,7 +435,9 @@ export default function Page() {
             const parsedData = JSON.parse(beforeDistributedVotes);
             const restoredCandidates = parsedData.candidates;
             const isCurrentUserDistributed = loginUserData?.undecidedVotesDistributed === true;
-            const undecidedVotes = Math.max(0, isCurrentUserDistributed ? parsedData.undecidedVote : parsedData.undecidedVote + 1);
+            // console.log(isCurrentUserDistributed , loginUserData?.votedCandidateId )
+            // console.log(loginUserData?.undecidedVotesDistributed , loginUserData?.votedCandidateId)
+            const undecidedVotes = Math.max(0, loginUserData?.undecidedVotesDistributed !== true && loginUserData?.votedCandidateId === 'undecided' || isCurrentUserDistributed ? parsedData.undecidedVote : parsedData.undecidedVote + 1);
             // console.log(loginUserData?.votedCandidateId , isCurrentUserDistributed)
             const updateCandidates = restoredCandidates.map((candidate) => {
                 if (!isCurrentUserDistributed && loginUserData?.votedCandidateId !== 'undecided' && candidate.id === loginUserData?.votedCandidateId) {
@@ -465,14 +465,13 @@ export default function Page() {
             setCandidates(updateCandidates);
             setUndecidedVote(undecidedVotes);
             setVotedCandidateId('undecided');
-            saveUserData(updateCandidates, undecidedVotes, 'undecided', false, likeId, disLikeId, null, false);
+            saveUserData(updateCandidates, undecidedVotes, 'undecided', false, likeId, disLikeId, null);
 
             localStorage.removeItem('BeforeDistributedVotes');
 
             return;
         }
-
-        if (votedCandidateId === 'undecided') return;
+        if (loginUserData?.votedCandidateId === 'undecided' || votedCandidateId === 'undecided') return;
 
         const newUndecided = Math.max(0, undecidedVote + 1);
         const updateCandidates = candidates.map((candidate) => {
@@ -552,7 +551,7 @@ export default function Page() {
             });
         }
 
-        const RepotedUser = activeCandidates.filter((c) => !RepotedUserId?.includes(Number(c?.whoAdded)))
+        const RepotedUser = activeCandidates.filter((c) => !reportedId?.includes(Number(c?.whoAdded)))
 
         if (RepotedUser.length === 0) {
             toast.error('All candidate owners have been reported by you! so cannot distribute votes');
@@ -650,42 +649,54 @@ export default function Page() {
 
     const handleReportUser = (userId) => {
         const userCandidates = defaultData?.candidates?.filter((candidate) => Number(candidate?.whoAdded) === Number(userId));
-        const userData = userCandidates?.map((data) => data?.id)
-        const likeIds = loginUserData?.likeId?.filter((item) => userData?.includes(item));
-        const dislikeIds = loginUserData?.dislikeId?.filter((item) => userData?.includes(item));
-        const ReportedUserDetail = { whoReported: loginUserInfo?.id, reportedUser: userId, previousLikeId: likeIds ?? [], previousDislikeId: dislikeIds ?? [] };
-
-        const canReportSelf = ReportedUserDetail.whoReported === ReportedUserDetail.reportedUser;
+        const userDataId = userCandidates?.map((data) => data?.id)
+        const likeIds = loginUserData?.likeId?.filter((item) => userDataId?.includes(item));
+        const dislikeIds = loginUserData?.dislikeId?.filter((item) => userDataId?.includes(item));
+        const reportedUserDetail = {
+            whoReported: loginUserInfo?.id,
+            reportedUser: userId,
+            previousLikeId: likeIds ?? [],
+            previousDislikeId: dislikeIds ?? []
+        };
+        const canReportSelf = reportedUserDetail.whoReported === reportedUserDetail.reportedUser;
 
         if (canReportSelf) {
             toast.error("You can't report yourself!");
             return
         }
+        const currentReports = Array.isArray(loginUserData?.reportedUserDetail)
+            ? loginUserData.reportedUserDetail
+            : [];
 
-        let reported = [];
-        const reportedUser = localStorage.getItem('reportedUser');
-        reported = reportedUser ? JSON.parse(reportedUser) : [];
-        setReportedUser(userId);
+        const updatedReportedUserDetail = [
+            ...currentReports,
+            reportedUserDetail
+        ];
+        const updatedReportedUserIds = updatedReportedUserDetail.filter((item) => Number(item.whoReported) === Number(loginUserInfo?.id)).map((item) => item.reportedUser);
 
-        const exists = reported.some((r) => r.reportedUser === ReportedUserDetail.reportedUser && r.whoReported === ReportedUserDetail.whoReported);
-        if (exists) return;
-        reported.push(ReportedUserDetail);
-        localStorage.setItem('reportedUser', JSON.stringify(reported));
+        setReportedUserIds(updatedReportedUserIds);
+
+        const updateData = userData?.map((user) => {
+            if (user?.id === loginUserData?.id) {
+                return {
+                    ...user,
+                    reportedUserDetail: updatedReportedUserDetail
+                };
+            }
+            return user;
+        });
+
+        dispatch(reqToUpdateUserData(updateData));
 
         const data = defaultData?.candidates?.find((candidate) => candidate.id === votedCandidateId)
         const beforeDistributedVotes = JSON.parse(localStorage.getItem('BeforeDistributedVotes'));
+        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, null, updatedReportedUserDetail);
 
         if (data?.whoAdded === userId || userCandidates?.length > 0) {
-
             const hasLikedCandidate = userCandidates.some((candidate) => loginUserData?.likeId?.includes(candidate?.id));
             const hasDislikedCandidate = userCandidates.some((candidate) => loginUserData?.dislikeId?.includes(candidate?.id));
             const updatecandidate = defaultData?.candidates.map((candidate) => {
                 if (candidate.id === votedCandidateId || hasLikedCandidate || hasDislikedCandidate) {
-                    // const updatedLikeIds = loginUserData?.likeId.filter((id) => id !== candidate?.id);
-                    // const updatedDislikeIds = loginUserData?.dislikeId.filter((id) => id !== candidate?.id);
-                    // setLikeId(updatedLikeIds);
-                    // setDislikeId(updatedDislikeIds);
-                    // console.log(loginUserData?.dislikeId.includes(candidate?.id) , loginUserData?.likeId.includes(candidate?.id))
                     if (Number(candidate?.whoAdded) !== Number(userId)) {
                         return candidate;
                     }
@@ -694,23 +705,24 @@ export default function Page() {
                         votes: candidate.id === votedCandidateId ? Math.max(0, candidate.votes - 1) : candidate.votes,
                         like: hasLikedCandidate && loginUserData?.likeId.includes(candidate?.id) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
                         dislike: hasDislikedCandidate && loginUserData?.dislikeId.includes(candidate?.id) ? Math.max(0, Number(candidate.dislike || 0) - 1) : Number(candidate.dislike || 0),
-
                     };
                 }
 
                 return candidate;
             });
+            const targetedCandidate = updatecandidate.find(c => c.id === votedCandidateId);
+            const shouldIncrementUndecided = targetedCandidate && targetedCandidate.whoAdded === userId;
             const updatedDefaultData = {
                 ...defaultData,
                 candidates: updatecandidate,
-                undecidedVote: defaultData?.candidates?.some((candidate) => candidate?.id === votedCandidateId) ? defaultData?.undecidedVote + 1 : defaultData?.undecidedVote
+                undecidedVote: shouldIncrementUndecided ? defaultData?.undecidedVote + 1 : defaultData?.undecidedVote
             }
 
             setCandidates(updatecandidate);
 
             setUndecidedVote(updatedDefaultData?.undecidedVote);
 
-            const userInfo = userData?.find((u) => u?.id === loginUserInfo?.id);
+            const userInfo = userDataId?.find((u) => u?.id === loginUserInfo?.id);
             if (userInfo) {
                 upsertUserIntoStorage({
                     ...userInfo,
@@ -718,8 +730,7 @@ export default function Page() {
                     votedCandidateId: 'undecided',
                 });
             }
-
-            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, defaultData?.candidates?.some((candidate) => candidate?.id === votedCandidateId) ? 'undecided' : loginUserData?.votedCandidateId, defaultData?.candidates?.some((candidate) => candidate?.id === votedCandidateId) ? true : loginUserData?.undecidedVotesDistributed, hasLikedCandidate ? null : loginUserData?.likeId, hasDislikedCandidate ? null : loginUserData?.dislikeId, null);
+            saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, shouldIncrementUndecided ? 'undecided' : loginUserData?.votedCandidateId, defaultData?.candidates?.some((candidate) => candidate?.id === votedCandidateId) ? true : loginUserData?.undecidedVotesDistributed, hasLikedCandidate ? loginUserData?.likeId?.filter((item) => !userDataId?.includes(item)) : loginUserData?.likeId, hasDislikedCandidate ? loginUserData?.dislikeId?.filter((item) => !userDataId?.includes(item)) : loginUserData?.dislikeId, null, updatedReportedUserDetail);
 
             if (beforeDistributedVotes) {
                 const updateBeforeDistributedVotes = beforeDistributedVotes?.candidates.map((candidate) => {
@@ -727,8 +738,8 @@ export default function Page() {
                         return {
                             ...candidate,
                             votes: candidate.id === votedCandidateId && loginUserData?.undecidedVotesDistributed !== true ? Math.max(0, candidate.votes - 1) : candidate.votes,
-                            like: hasLikedCandidate && loginUserData?.likeId?.includes(candidate?.id) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
-                            dislike: hasDislikedCandidate && loginUserData?.dislikeId?.includes(candidate?.id) ? Math.max(0, Number(candidate.dislike || 0) - 1) : Number(candidate.dislike || 0),
+                            like: hasLikedCandidate && likeIds?.includes(candidate?.id) ? Math.max(0, Number(candidate.like || 0) - 1) : Number(candidate.like || 0),
+                            dislike: hasDislikedCandidate && dislikeIds?.includes(candidate?.id) ? Math.max(0, Number(candidate.dislike || 0) - 1) : Number(candidate.dislike || 0),
                         };
                     }
                     return candidate;
@@ -736,40 +747,23 @@ export default function Page() {
                 const updatedBeforeDistributedData = {
                     ...beforeDistributedVotes,
                     candidates: updateBeforeDistributedVotes,
-                    undecidedVote: beforeDistributedVotes?.candidates?.some((candidate) => candidate?.id === votedCandidateId ) && loginUserData?.undecidedVotesDistributed !== true ? beforeDistributedVotes.undecidedVote + 1 : beforeDistributedVotes.undecidedVote
+                    undecidedVote: beforeDistributedVotes?.candidates?.some((candidate) => candidate?.id === votedCandidateId) && loginUserData?.undecidedVotesDistributed !== true ? beforeDistributedVotes.undecidedVote + 1 : beforeDistributedVotes.undecidedVote
                 }
                 localStorage.setItem('BeforeDistributedVotes', JSON.stringify(updatedBeforeDistributedData));
             }
         }
 
-        setReportedUserIds((prev) => [...prev, userId]);
-
     }
 
     const updateUserDetail = useCallback(() => {
-        const reportedUser = localStorage.getItem('reportedUser');
-        if (!reportedUser) {
+        const reportedUserIds = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : [];
+
+        if (reportedUserIds.length === 0) {
             return userDetail;
         }
 
-        let reportedList;
-        try {
-            reportedList = JSON.parse(reportedUser);
-            if (!Array.isArray(reportedList) || reportedList.length === 0) {
-                return userDetail;
-            }
-        } catch (e) {
-            return userDetail;
-        }
-
-        const reportedUsers = reportedList.filter(user => user?.whoReported === userId)
-        const reportedUserIds = reportedUsers.map(user => user?.reportedUser);
-
-        if (reportedUserIds.length === 0) return userDetail;
-
-        const result = userDetail.filter(user => !reportedUserIds.includes(user.id));
-        return result;
-    }, [userDetail, reportedUser]);
+        return userDetail.filter((user) => !reportedUserIds.includes(Number(user?.id)));
+    }, [userDetail, loginUserData, loginUserInfo?.id]);
 
     useEffect(() => {
         const filteredUsers = updateUserDetail().filter((user) => {
@@ -1001,7 +995,7 @@ export default function Page() {
                         <tbody>
                             {filteredCandidates.length > 0 ? (
                                 filteredCandidates.map((user, index) => {
-                                    const isReported = RepotedUserId?.some(
+                                    const isReported = reportedId?.some(
                                         id => Number(id) === Number(user?.whoAdded)
                                     );
 
@@ -1065,11 +1059,11 @@ export default function Page() {
                                                     <span>{Number(user.dislike || 0)}</span>
                                                 </span>
 
-                                                <span className={`comment-action ${isReported ? "action-disabled" : ""}`} onClick={() => {
-                                                    if (!isReported) {
-                                                        setOpenCommentModal(true);
-                                                        setSelectCandidate(user);
-                                                    }
+                                                <span className={`comment-action`} onClick={() => {
+                                                    // if (!isReported) {
+                                                    setOpenCommentModal(true);
+                                                    setSelectCandidate(user);
+                                                    // }
                                                 }}>
                                                     <CommentsIcon />
                                                     <span>{totalcount}</span>
@@ -1195,6 +1189,7 @@ export default function Page() {
                     const beforeDistributedVotes = JSON.parse(localStorage.getItem('BeforeDistributedVotes'));
 
                     if (beforeDistributedVotes) {
+                        setReportedUserIds((prev) => prev.filter((id) => id !== userId));
                         const updateBeforeDistributedVotes = beforeDistributedVotes?.candidates.map((candidate) => {
                             if (previousLikeId?.some(id => Number(id) === candidate?.id)) {
                                 return {
@@ -1218,7 +1213,8 @@ export default function Page() {
                         localStorage.setItem('BeforeDistributedVotes', JSON.stringify(updatedBeforeDistributedData));
                     }
 
-                    saveUserData(updateCandidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, restoredLikeIds, restoredDislikeIds, null);
+                    const updatedReportedUserDetail = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail?.filter((item) => item?.reportedUser !== userId || loginUserInfo?.id !== item?.whoReported) : [];
+                    saveUserData(updateCandidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, restoredLikeIds, restoredDislikeIds, null, updatedReportedUserDetail);
                 }}
             />}
             {openCommentModal && <CommentsModal
