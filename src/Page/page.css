@@ -57,7 +57,7 @@ select {
     gap: 10px;
 }
 
-.user-name {
+.username {
     min-width: 85px;
     border-radius: 8px;
     color: #30435d;

@@ -440,3 +440,52 @@
     background: #619dda;
     color: #fff;
 }
+.user-card { 
+  background-color: #ecebeb; 
+  color: #000; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  border-radius: 14px; 
+  padding: 70px; 
+  gap: 10px; 
+} 
+
+.user-name { 
+  font-size: 1.25rem; 
+  font-weight: 600; 
+  color: #1a1a1a; 
+  text-align: center; 
+} 
+
+.cancel-btn { 
+  background: #ca2222d3; 
+  color: #ffffff; 
+  min-width: 90px; 
+} 
+
+.status-Active, .status-Inactive { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 5px; 
+  padding: 5px 12px; 
+  border-radius: 15px; 
+  font-size: 11px; 
+  font-weight: 600; 
+} 
+
+.status-Active { 
+  background: #e7f9f0; 
+  color: #1da66f; 
+} 
+
+.status-Inactive { 
+  background: #ffecef; 
+  color: #e34b5d; 
+} 
+
+.status-Active::before, .status-Inactive::before { 
+  content: "●"; 
+  font-size: 7px; 
+}

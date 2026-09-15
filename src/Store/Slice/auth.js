@@ -111,6 +111,7 @@ const authSlice = createSlice({
             const candidateId = action.payload;
             const beforeDistributedVotes = JSON.parse(localStorage.getItem('BeforeDistributedVotes'));
             const removedCandidate = state.defaultData.candidates.find(candidate => candidate.id === candidateId);
+            const removedCandidateVoters = state.userData.filter(user => user?.votedCandidateId === candidateId);
 
             const removedUserVotes = removedCandidate?.votes || 0;
             const remainingCandidates = state.defaultData.candidates.filter(candidate => candidate.id !== candidateId);
@@ -120,21 +121,25 @@ const authSlice = createSlice({
 
             let updatedCandidates = [...remainingCandidates];
 
-            const reportedCandidateIds = state?.defaultData?.report?.filter(report => report?.whoReported === state?.loginUserInfo?.id)?.map(report => report?.reportedCandidateId) || [];
+            const reportedCandidateIds = state?.loginUserData?.reportedCandidateDetail?.filter(report => report?.whoReported === state?.loginUserInfo?.id)?.map(report => report?.reportedCandidateId) || [];
             const eligibleIndices = updatedCandidates.map((candidate, index) => ({ index, id: candidate?.id })).filter(({ id }) => !reportedCandidateIds.includes(id)).map(({ index }) => index);
 
             if (otherCandidatesCount > 0 && removedUserVotes > 0) {
                 updatedCandidates = remainingCandidates.filter((candidate) => ({ ...candidate }));
 
-                if (eligibleIndices.length > 0) {
-                    for (let i = 0; i < removedUserVotes; i++) {
-                        const candidateIndex = eligibleIndices[i % eligibleIndices.length];
-                        updatedCandidates[candidateIndex] = {
-                            ...updatedCandidates[candidateIndex],
-                            votes: updatedCandidates[candidateIndex].votes + 1
-                        };
+                removedCandidateVoters.forEach((user, index) => {
+                    if (eligibleIndices.length > 0) {
+                        const candidateIndex = eligibleIndices[index % eligibleIndices.length];
+                        const candidateId = updatedCandidates[candidateIndex]?.id;
+
+                        if (candidateId) {
+                            updatedCandidates[candidateIndex] = {
+                                ...updatedCandidates[candidateIndex],
+                                votes: updatedCandidates[candidateIndex].votes + 1
+                            };
+                        }
                     }
-                }
+                });
             }
             const updatedDefaultData = {
                 ...state.defaultData,
@@ -144,55 +149,48 @@ const authSlice = createSlice({
             localStorage.setItem('DefaultData', JSON.stringify(updatedDefaultData));
             state.defaultData = getLocalData('DefaultData');
 
-            const updateCanidates = state.userData.map((user) => {
-                const hasRemovedCandidateVote = user.votedCandidateId === candidateId;
-                const hasRemovedCandidateLike = user.likeId?.includes(candidateId);
-                const hasRemovedCandidateDislike = user.dislikeId?.includes(candidateId);
+            const undecidedVotesDistributed = state.userData?.filter((user) => user?.votedCandidateId === candidateId )?.some((user) => user?.undecidedVotesDistributed === false)
 
-                if (!hasRemovedCandidateVote && !hasRemovedCandidateLike && !hasRemovedCandidateDislike) {
+            const updatedUserData = state.userData.map(user => {
+                const removedVoteIndex = removedCandidateVoters.findIndex(voter => voter.id === user.id);
+
+                if (removedVoteIndex === -1) {
                     return user;
                 }
 
-                let newVotedCandidateId = user.votedCandidateId;
-                let undecidedVotesDistributed = user.undecidedVotesDistributed;
-
-                if (hasRemovedCandidateVote) {
-                    if (eligibleIndices.length > 0) {
-                        const userIndex = state.userData.indexOf(user);
-                        const distributedIndex = eligibleIndices[userIndex % eligibleIndices.length];
-                        newVotedCandidateId = updatedDefaultData.candidates[distributedIndex]?.id || 'undecided';
-                        undecidedVotesDistributed = true;
-                        console.log(distributedIndex, 'distributedIndex', newVotedCandidateId, 'newVotedCandidateId', userIndex, 'userIndex')
-                    } else {
-                        newVotedCandidateId = 'undecided';
-                        undecidedVotesDistributed = false;
-                    }
+                if (eligibleIndices.length === 0) {
+                    return {
+                        ...user,
+                        votedCandidateId: 'undecided',
+                        undecidedVotesDistributed: false
+                    };
                 }
+
+                const candidateIndex = eligibleIndices[removedVoteIndex % eligibleIndices.length];
 
                 return {
                     ...user,
-                    votedCandidateId: newVotedCandidateId,
-                    undecidedVotesDistributed,
+                    votedCandidateId: updatedCandidates[candidateIndex]?.id || 'undecided',
+                    undecidedVotesDistributed: true,
                     likeId: user.likeId ? user.likeId.filter(id => id !== candidateId) : user.likeId,
                     dislikeId: user.dislikeId ? user.dislikeId.filter(id => id !== candidateId) : user.dislikeId
                 };
             });
 
-            localStorage.setItem('userData', JSON.stringify(updateCanidates));
+            localStorage.setItem('userData', JSON.stringify(updatedUserData));
             state.userData = getLocalData('userData');
 
             if (beforeDistributedVotes) {
                 const beforeCandidates = beforeDistributedVotes.candidates.filter(candidate => candidate.id !== candidateId);
-                const undecidedVote = beforeDistributedVotes?.undecidedVote < remainingVotes ? remainingVotes : beforeDistributedVotes?.undecidedVote;
+                const undecidedVote = beforeDistributedVotes?.undecidedVote < remainingVotes ? undecidedVotesDistributed === true ? remainingVotes + 1 : remainingVotes : undecidedVotesDistributed === true ?  beforeDistributedVotes?.undecidedVote + 1 : beforeDistributedVotes?.undecidedVote;
                 const updateBeforeDistributedVotesData = {
                     ...beforeDistributedVotes,
-
                     candidates: beforeCandidates.map(candidate => ({
                         ...candidate,
                         votes: candidate?.votes
                     })),
 
-                    undecidedVote: eligibleIndices && eligibleIndices?.length === 0 ? undecidedVote : beforeDistributedVotes?.undecidedVote
+                    undecidedVote: eligibleIndices && eligibleIndices?.length === 0 || undecidedVotesDistributed === true ? undecidedVote : beforeDistributedVotes?.undecidedVote
                 };
                 localStorage.setItem('BeforeDistributedVotes', JSON.stringify(updateBeforeDistributedVotesData));
             }

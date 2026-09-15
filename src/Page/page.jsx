@@ -9,6 +9,7 @@ import AddCandidateModal from '../Component/Modal/AddCandidate';
 import ShowReportedUserModal from '../Component/Modal/ShowReportedUser';
 import CommentsModal from '../Component/Modal/CommentModal';
 import { toast } from 'react-toastify';
+import UserDetailCard from '../Component/Modal/UserDetailCard';
 
 
 // const CandidatesDetail = [
@@ -68,6 +69,11 @@ export default function Page() {
     const [selectCandidate, setSelectCandidate] = useState('');
     const [openReportedUserModal, setOpenReportedUserModal] = useState(false);
     const [openCommentModal, setOpenCommentModal] = useState(false);
+    const [openUserCard, setOpenUserCard] = useState(false);
+    const [setlectedUser, setSelectedUser] = useState('');
+
+    const [follow, setFollow] = useState(loginUserData?.following);
+    const [blocked, setBlocked] = useState(loginUserData?.blocked);
 
     const [reportedUserIds, setReportedUserIds] = useState(() =>
         Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : []
@@ -87,6 +93,7 @@ export default function Page() {
     const reportedUsers = useMemo(() => userDetail?.filter((user) => reportedUserIds?.includes(user.id)), [userDetail, reportedUserIds]);
 
     const addedCandidates = Array.isArray(defaultData?.candidates) ? defaultData.candidates.filter((user) => Number(user.whoAdded) === Number(loginUserInfo?.id)) : [];
+    const AllowAddVotes = defaultData?.candidates?.filter((candidate) => (Array.isArray(follow) && follow.includes(candidate?.whoAdded)) || candidate?.whoAdded === loginUserInfo?.id)?.map((user) => user?.id);
 
     const ties = useMemo(() => {
         if (!finalResult || totalVotes === 0) return [];
@@ -105,9 +112,14 @@ export default function Page() {
         setVotedCandidateId(InitialUserVotes);
         setLikeId(InitialLike);
         setDislikeId(InitialDisLike);
+
     }, [userId, defaultData, userData]);
 
-    const saveUserData = (newCandidates, newUndecided, newUserVotes, undecidedVotesDistributed = false, likeId = [], disLikeId = [], reportedCandidateId = null, reportedUserDetail = loginUserData?.reportedUserDetail ?? []) => {
+    useEffect(() => {
+        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId);
+    }, [userId]);
+
+    const saveUserData = (newCandidates, newUndecided, newUserVotes, undecidedVotesDistributed = false, likeId = [], disLikeId = [], reportedCandidateId = null, reportedUserDetail = loginUserData?.reportedUserDetail ?? [], reportedCandidateDetail = loginUserData?.reportedCandidateDetail ?? [], following = loginUserData?.following ?? [], blocked = loginUserData?.blocked ?? []) => {
 
         const currentUserDataEntry = {
             id: userId,
@@ -115,25 +127,29 @@ export default function Page() {
             votedCandidateId: newUserVotes,
             likeId: Array.isArray(likeId) ? likeId : [],
             dislikeId: Array.isArray(disLikeId) ? disLikeId : [],
-            reportedUserDetail: reportedUserDetail
+            reportedUserDetail: reportedUserDetail,
+            reportedCandidateDetail: reportedCandidateDetail,
+            following: following,
+            blocked: blocked,
         };
 
         const updatedAllUsersStorage = upsertUserIntoStorage(currentUserDataEntry, 'userData');
 
         dispatch(reqToUpdateUserData(updatedAllUsersStorage));
 
-        let updatedReports = [...report];
+        // let updatedReports = [...report];
+        // console.log(updatedReports , reportedCandidateId)
 
-        if (reportedCandidateId !== null) {
-            const newReportItem = { reportedCandidateId: reportedCandidateId, whoReported: userId };
-            const alreadyExists = report.some((item) => item.reportedCandidateId === reportedCandidateId && item.whoReported === userId);
-            updatedReports = alreadyExists ? report : [...report, newReportItem];
-        }
+        // if (reportedCandidateId !== null) {
+        //     const newReportItem = { reportedCandidateId: reportedCandidateId, whoReported: userId };
+        //     const alreadyExists = report.some((item) => item.reportedCandidateId === reportedCandidateId && item.whoReported === userId);
+        //     updatedReports = alreadyExists ? report : [...report, newReportItem];
+        // }
         dispatch(
             reqToUpdateDefaultData({
                 candidates: newCandidates,
                 undecidedVote: newUndecided,
-                report: updatedReports,
+                // report: updatedReports,
             })
         );
 
@@ -194,16 +210,45 @@ export default function Page() {
             });
         }
 
-        const reportedCandidateIds = defaultData?.report?.filter((item) => item.whoReported === userId)?.map((item) => item.reportedCandidateId) || [];
+        const reportedCandidateIds = loginUserData?.reportedCandidateDetail?.filter((item) => item.whoReported === userId)?.map((item) => item.reportedCandidate) || [];
         result = result.filter((candidate) => !reportedCandidateIds.includes(candidate.id));
+
+        if (blocked) {
+            result = result.filter((candidates) => !blocked?.includes(candidates?.whoAdded))
+        }
 
         setFilteredCandidates(result);
 
-    }, [candidates, filter, search, sortBy, showTopTwo, reportedCandidateId, pinCandidate]);
+    }, [candidates, filter, search, sortBy, showTopTwo, reportedCandidateId, pinCandidate , blocked]);
 
     const handleReport = (candidateId) => {
         setReportedCandidateId(candidateId);
-        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId)
+
+        const reportedCandidateDetail = {
+            whoReported: loginUserInfo?.id,
+            reportedCandidate: candidateId,
+        }
+        const currentReports = Array.isArray(loginUserData?.reportedCandidateDetail)
+            ? loginUserData.reportedCandidateDetail
+            : [];
+
+        const updatedReportedCandidateDetail = [
+            ...currentReports,
+            reportedCandidateDetail
+        ];
+
+        const updateData = userData?.map((user) => {
+            if (user?.id === loginUserData?.id) {
+                return {
+                    ...user,
+                    reportedCandidateDetail: updatedReportedCandidateDetail
+                };
+            }
+            return user;
+        });
+        dispatch(reqToUpdateUserData(updateData));
+
+        saveUserData(candidates, undecidedVote, votedCandidateId, loginUserData?.undecidedVotesDistributed, likeId, disLikeId, candidateId, loginUserData?.reportedUserDetail, updatedReportedCandidateDetail)
     };
 
     const handleSort = (value) => {
@@ -510,7 +555,7 @@ export default function Page() {
             return { user: user, userInfo: userInfo || null }
         }).filter(({ userInfo }) => userInfo?.votedCandidateId === 'undecided');
 
-        const reportedCandidateIds = defaultData?.report?.filter((item) => item.whoReported === userId)?.map((item) => item.reportedCandidateId) || [];
+        const reportedCandidateIds = loginUserData?.reportedCandidateDetail?.filter((item) => item.whoReported === userId)?.map((item) => item.reportedCandidate) || [];
         const activeCandidates = updateCandidates.filter((candidate) => !reportedCandidateIds.includes(candidate.id));
 
         if (activeCandidates.length === 0) {
@@ -551,10 +596,10 @@ export default function Page() {
             });
         }
 
-        const RepotedUser = activeCandidates.filter((c) => !reportedId?.includes(Number(c?.whoAdded)))
+        const RepotedUser = activeCandidates.filter((c) => !reportedId?.includes(Number(c?.whoAdded))).filter((c) => AllowAddVotes?.includes(c?.id)); 
 
         if (RepotedUser.length === 0) {
-            toast.error('All candidate owners have been reported by you! so cannot distribute votes');
+            toast.error('No allowed candidates available to distribute votes to!');
             return;
         }
 
@@ -678,15 +723,23 @@ export default function Page() {
 
         const updateData = userData?.map((user) => {
             if (user?.id === loginUserData?.id) {
+                const currentFollowing = Array.isArray(user?.following) ? user.following : [];
+                const isFollowing = Array.isArray(follow) && follow.includes(userId);
+                setFollow((prev) =>
+                    isFollowing ? prev.filter(id => id !== userId) : prev
+                );
                 return {
                     ...user,
-                    reportedUserDetail: updatedReportedUserDetail
+                    reportedUserDetail: updatedReportedUserDetail,
+                    following: currentFollowing.filter((f) => !(f?.followingUser === userId))
                 };
             }
             return user;
         });
 
-        dispatch(reqToUpdateUserData(updateData));
+        setTimeout(() => {
+            dispatch(reqToUpdateUserData(updateData));
+        }, [500])
 
         const data = defaultData?.candidates?.find((candidate) => candidate.id === votedCandidateId)
         const beforeDistributedVotes = JSON.parse(localStorage.getItem('BeforeDistributedVotes'));
@@ -730,7 +783,10 @@ export default function Page() {
                     votedCandidateId: 'undecided',
                 });
             }
+            
+            setTimeout(() => {
             saveUserData(updatecandidate, updatedDefaultData?.undecidedVote, shouldIncrementUndecided ? 'undecided' : loginUserData?.votedCandidateId, defaultData?.candidates?.some((candidate) => candidate?.id === votedCandidateId) ? true : loginUserData?.undecidedVotesDistributed, hasLikedCandidate ? loginUserData?.likeId?.filter((item) => !userDataId?.includes(item)) : loginUserData?.likeId, hasDislikedCandidate ? loginUserData?.dislikeId?.filter((item) => !userDataId?.includes(item)) : loginUserData?.dislikeId, null, updatedReportedUserDetail);
+            },[500])
 
             if (beforeDistributedVotes) {
                 const updateBeforeDistributedVotes = beforeDistributedVotes?.candidates.map((candidate) => {
@@ -752,6 +808,8 @@ export default function Page() {
                 localStorage.setItem('BeforeDistributedVotes', JSON.stringify(updatedBeforeDistributedData));
             }
         }
+
+        setOpenUserCard(false)
 
     }
 
@@ -838,6 +896,52 @@ export default function Page() {
 
     }
 
+    const handleFollow = (UserId) => {
+        const updateData = userData?.map((user) => {
+            if (user?.id === loginUserData?.id) {
+                const currentFollowing = Array.isArray(user?.following) ? user.following : [];
+                const followingSet = new Set(currentFollowing.map(id => id));
+                const isAlreadyFollowing = followingSet.has(UserId);
+
+                const isFollowing = Array.isArray(follow) && follow.includes(UserId);
+
+                setFollow((prev) => isFollowing ? prev.filter(id => id !== UserId) : [...(prev || []), UserId]);
+
+                return {
+                    ...user,
+                    following: isAlreadyFollowing ? currentFollowing.filter((id) => id !== UserId) : [...currentFollowing,  UserId ]
+                };
+            }
+            return user;
+        });
+
+        dispatch(reqToUpdateUserData(updateData));
+    }
+
+    const handleBlocked = (userId) => {
+        const updateData = userData?.map((user) => {
+            if (user?.id === loginUserData?.id) {
+                const currentBlocked = Array.isArray(user?.blocked) ? user.blocked : [];
+                const currentFollowing = Array.isArray(user?.following) ? user.following : [];
+                const blockedSet = new Set(currentBlocked.map(id => id));
+                const isAlreadyBlocked = blockedSet.has(userId);
+
+                const isBlocked = Array.isArray(blocked) && blocked.includes(userId);
+                setFollow((prev) => isBlocked ? prev.filter(id => id !== userId) : prev)
+                setBlocked((prev) => isBlocked ? prev.filter(id => id !== userId) : [...(prev || []), userId]);
+
+                return {
+                    ...user,
+                    blocked: isAlreadyBlocked ? currentBlocked.filter(id => id !== userId) : [...currentBlocked,userId],
+                    following: isBlocked ? currentFollowing.filter((id) => id !== userId) : user?.following,
+                };
+            }
+            return user;
+        });
+        dispatch(reqToUpdateUserData(updateData));
+    }
+
+
     return (
         <>
             <div className="voting-dashboard">
@@ -850,7 +954,7 @@ export default function Page() {
                     </div>
 
                     <div className="user-info">
-                        <strong className="user-name">
+                        <strong className="username">
                             {loginUserInfo?.firstName + " " + loginUserInfo?.lastName}
                         </strong>
 
@@ -875,22 +979,23 @@ export default function Page() {
                                 <th>#</th>
                                 <th>User</th>
                                 <th>status</th>
-                                <th>Action</th>
+                                {/* <th>Action</th> */}
                             </tr>
                             {userList.length > 0 ? userList?.map((user, index) => (
                                 <tr key={index}>
                                     <th>{index + 1}</th>
                                     <th>
-                                        <div className='user-profile'>
+                                        <div className='user-profile' onClick={() => { setSelectedUser(user); setOpenUserCard(true) }} style={{ cursor: 'pointer' }}>
                                             <span className='user-avatar'>{user.firstName?.charAt(0)?.toUpperCase()}</span>
                                             <span >{user.firstName + " " + user.lastName}</span>
                                         </div>
                                     </th>
                                     <th><span className={`status-${user.status}`}>{user.status}</span></th>
-                                    <th className='user-actions'>
+                                    {/* <th className='user-actions'>
                                         <span style={{ cursor: 'pointer' }} onClick={() => handlePinUnpin(user.id, 'user')} className='pin-button'><PinIcon color={'black'} fill={(Array.isArray(pinUser) && pinUser.includes(user.id)) ? 'black' : 'none'} /></span>
                                         <button className={`${userId === user.id ? "active-user-button" : "report-button"}`} onClick={() => userId === user.id ? '' : handleReportUser(user.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{userId === user.id ? "Active User" : "Report"}</button>
-                                    </th>
+                                        {userId !== user.id && <button className={`active-user-button follow-button`} onClick={() => handleFollow(user?.id)} style={{ cursor: userId === user.id ? "default" : "pointer" }}>{follow?.includes(user?.id) ? 'Following' : 'Follow'}</button>}
+                                    </th> */}
                                 </tr>
                             )) : <tr><td colSpan='6'>No User</td></tr>}
                         </tbody>
@@ -1059,7 +1164,7 @@ export default function Page() {
                                                     <span>{Number(user.dislike || 0)}</span>
                                                 </span>
 
-                                                <span className={`comment-action`} onClick={() => {
+                                                <span className={`comment-action  ${!AllowAddVotes?.includes(user?.id) ? "action-disabled" : ""}`} onClick={() => {
                                                     // if (!isReported) {
                                                     setOpenCommentModal(true);
                                                     setSelectCandidate(user);
@@ -1068,13 +1173,12 @@ export default function Page() {
                                                     <CommentsIcon />
                                                     <span>{totalcount}</span>
                                                 </span>
-
-                                                <button className={`primary-action-button ${isReported ? "action-disabled" : ""}`} disabled={isReported} onClick={() => handleVotes(user.id)}>
+                                                <button className={`primary-action-button ${isReported || !AllowAddVotes?.includes(user?.id) ? "action-disabled" : ""}`} disabled={isReported || !AllowAddVotes?.includes(user?.id)} onClick={() => handleVotes(user.id)}>
                                                     Add Votes
                                                 </button>
 
                                                 {!isOwner && (
-                                                    <button className={`report-button ${isReported ? "action-disabled" : ""}`} disabled={isReported} onClick={() => handleReport(user.id)}>
+                                                    <button className={`report-button ${isReported || !AllowAddVotes?.includes(user?.id) ? "action-disabled" : ""}`} disabled={isReported || !AllowAddVotes?.includes(user?.id)} onClick={() => handleReport(user.id)}>
                                                         Report
                                                     </button>
                                                 )}
@@ -1221,6 +1325,16 @@ export default function Page() {
                 isOpen={openCommentModal}
                 onClose={() => setOpenCommentModal(false)}
                 candidate={selectCandidate}
+            />}
+            {openUserCard && <UserDetailCard
+                handleFollow={handleFollow}
+                handleReportUser={handleReportUser}
+                user={setlectedUser}
+                onClose={() => setOpenUserCard(false)}
+                userId={userId}
+                follow={follow}
+                handleBlocked={handleBlocked}
+                blocked={blocked}
             />}
         </>
     )

@@ -21,7 +21,7 @@ const depthColors = {
     3: '#d37c76ff',
 };
 
-const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts, setOpenReportModal, setSelectedComment, ReportedUsers, repostedUser, ReportedUsersCandidate }) => {
+const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, loginUserInfo, expandReplies, setExpandReplies, inputRef, handleToggleExpand, handleLike, likeId, handleDislike, disLikeId, disLikeCounts, likeCounts, setOpenReportModal, setSelectedComment, repostedUser }) => {
 
 
     return (
@@ -39,12 +39,10 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
                                 borderLeft: depth > 0 ? `2px solid ${depthColors[Math.min(depth, MAX_DEPTH)]}` : `2px solid ${depthColors[0]}`
                             }}
                         >
-                            {/* {console.log(ReportedUsers.includes(item?.author?.user_id) , ReportedUsers)}
-                            {console.log(ReportedUsersCandidate.includes(item?.id) , ReportedUsersCandidate ,item?.id)} */}
                             <div className="reply-item">
-                                {ReportedUsers.includes(item?.author?.user_id)
-                                    // && ReportedUsersCandidate.includes(item?.id) 
-                                    ? <span className="reported-label">This comment is no longer visible.</span> :
+                                {/* {ReportedUsers.includes(item?.author?.user_id)
+                                    && ReportedUsersCandidate.includes(comment_id)  */}
+                                    {/* ? <span className="reported-label">This comment is no longer visible.</span> : */}
                                     <>
                                         <div className="comment-avatar reply-avatar">
                                             {item?.author?.username?.charAt(0)?.toUpperCase()}
@@ -123,7 +121,7 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
 
                                         </div>
                                     </>
-                                }
+                                {/* } */}
                             </div>
 
                             {hasReplies && (
@@ -161,9 +159,10 @@ const CommentItem = ({ comments, depth, handleReply, handleDelete, setEdit, logi
                                 likeCounts={likeCounts}
                                 setOpenReportModal={setOpenReportModal}
                                 setSelectedComment={setSelectedComment}
-                                ReportedUsers={ReportedUsers}
+                                // ReportedUsers={ReportedUsers}
                                 repostedUser={repostedUser}
-                                ReportedUsersCandidate={ReportedUsersCandidate}
+                                // ReportedUsersCandidate={ReportedUsersCandidate}
+                                // comment_id={comment_id}
                             />
                         )}
 
@@ -201,15 +200,16 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
         }).map(comment => ({ ...comment, replies: filterReportedComments(comment?.replies || []) }));
     };
 
-    const filterReportedCandidateComment = (comments) => {
-        return comments?.filter(comment => {
-            const authorId = Number(comment?.author?.user_id);
-            return !ReportedUsers?.includes(authorId);
-        }).map(comment => ({ ...comment, replies: filterReportedCandidateComment(comment?.replies || []) }))
-    }
+    // const filterReportedCandidateComment = (comments) => {
+    //     return comments?.filter(comment => {
+    //         const authorId = Number(comment?.author?.user_id);
+    //         return !ReportedUsers?.includes(authorId);
+    //     }).map(comment => ({ ...comment, replies: filterReportedCandidateComment(comment?.replies || []) }))
+    // }
 
-    const ReportedUsers = defaultData?.report?.flatMap(report => Number(report?.whoReported)) || [];
-    const ReportedUsersCandidate = defaultData?.report?.flatMap(report => Number(report?.reportedCandidateId)) || [];
+    // const ReportedUsers = loginUserData?.reportedCandidateDetail?.flatMap(report => Number(report?.whoReported)) || [];
+    // const ReportedUsersCandidate = loginUserData?.reportedCandidateDetail?.flatMap(report => Number(report?.reportedCandidateId)) || [];
+    // console.log(ReportedUsers , ReportedUsersCandidate)
 
     // const visibleComments = useMemo(() => {
     //     const comments = filterReportedComments(filterComment || []);
@@ -333,7 +333,9 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
         dispatch(reqToAddComment(commentData));
         setComment("");
     };
-    const repostedUser = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : []
+    
+    const repostedUser = Array.isArray(loginUserData?.reportedUserDetail) ? loginUserData.reportedUserDetail.filter((report) => Number(report?.whoReported) === Number(loginUserInfo?.id)).map((report) => report?.reportedUser) : [];
+
     const handleReply = (comments) => {
         setReplyingTo(comments);
         setReply("");
@@ -410,13 +412,12 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                     className="comment-item-container"
                                     key={comments.id}
                                 >
-                                    {/* {console.log(ReportedUsers.includes(comments?.author?.user_id) , ReportedUsers)} */}
-                                    {/* {console.log(ReportedUsersCandidate.includes(comments?.id) , comments ,ReportedUsersCandidate)} */}
+                                    {/* {console.log(ReportedUsers.includes(comments?.author?.user_id) , ReportedUsers ,comments?.author?.user_id)}
+                                    {console.log(ReportedUsersCandidate.includes(comments?.candidate_id) , comments ,ReportedUsersCandidate)} */}
                                     <div className="comment-item">
-                                        {
-                                            ReportedUsers.includes(comments?.author?.user_id)
-                                                //  && ReportedUsersCandidate.includes(comments?.id) 
-                                                ? <span className="reported-label">This comment is no longer visible.</span> :
+                                        {/* {
+                                            ReportedUsers.includes(comments?.author?.user_id) && ReportedUsersCandidate.includes(comments?.candidate_id) 
+                                                ? <span className="reported-label">This comment is no longer visible.</span> : */}
                                                 <>
                                                     <div className="comment-avatar">
                                                         {comments?.author?.username?.charAt(0)?.toUpperCase()}
@@ -430,12 +431,12 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                                             {comments?.content}
                                                         </div>
                                                         <div className="comment-action-container">
-                                                            <div style={{ cursor: "pointer" }}>
-                                                                <span onClick={() => handleLike(comments?.id)} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[comments?.id] || 0, 0)}</span>
+                                                            <div style={{ cursor: "pointer" }} >
+                                                                <span onClick={() => repostedUser.some(id => id === comments?.author?.user_id) ? '' : handleLike(comments?.id)} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><LikeIcon width={15} height={15} style={{ color: likeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(likeCounts[comments?.id] || 0, 0)}</span>
                                                                 {/* comments?.like === true */}
                                                             </div>
-                                                            <div style={{ cursor: "pointer" }}>
-                                                                <span onClick={() => handleDislike(comments?.id)} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[comments?.id] || 0, 0)}</span>
+                                                            <div style={{ cursor: "pointer" }} >
+                                                                <span onClick={() => repostedUser.some(id => id === comments?.author?.user_id) ? '' :  handleDislike(comments?.id)} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black', fontSize: '15px' }}><DislikeIcon width={15} height={15} style={{ color: disLikeId.includes(comments?.id) ? 'red' : 'black' }} />{Math.max(disLikeCounts[comments?.id] || 0, 0)}</span>
                                                                 {/* comments?.dislike === true */}
                                                             </div>
                                                             <div className="comment-actions">
@@ -464,13 +465,13 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                                             )}
                                                             {comments?.author?.user_id !== loginUserInfo?.id &&
                                                                 <div className="comment-actions">
-                                                                    <button onClick={() => { setOpenReportModal(true); setSelectedComment(comments) }}><ReportIcon width={15} height={15} />Report</button>
+                                                                    <button disabled={repostedUser.includes(comments?.author?.user_id)}  onClick={() => { setOpenReportModal(true); setSelectedComment(comments) }}><ReportIcon width={15} height={15} />Report</button>
                                                                 </div>
                                                             }
                                                         </div>
                                                     </div>
                                                 </>
-                                        }
+                                        {/* } */}
                                     </div>
 
                                     {comments?.replies?.length > 0 && comments?.replies?.length > 0 && comments.replies[0]?.isReported?.every((comment) => comment?.whoReported !== loginUserInfo?.id) &&
@@ -505,9 +506,10 @@ export default function CommentsModal({ isOpen, onClose, candidate }) {
                                             likeCounts={likeCounts}
                                             setOpenReportModal={setOpenReportModal}
                                             setSelectedComment={setSelectedComment}
-                                            ReportedUsers={ReportedUsers}
+                                            // ReportedUsers={ReportedUsers}
                                             repostedUser={repostedUser}
-                                            ReportedUsersCandidate={ReportedUsersCandidate}
+                                            // ReportedUsersCandidate={ReportedUsersCandidate}
+                                            // comment_id={comments?.candidate_id}
                                         />
                                     )}
                                 </div>
